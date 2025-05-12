@@ -8,6 +8,10 @@ class Home extends StatefulWidget {
 }
 
 class _Home extends State<Home> {
+  get image => null;
+
+  get networkImg => null;
+
   @override
   Widget build(BuildContext context) {
     int currentPageIndex = 0;
@@ -29,15 +33,14 @@ class _Home extends State<Home> {
             padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
             width: 600,
             color: const Color(0xff576196),
-            child: ListView.separated(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 35),
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 33),
               itemCount: 2,
-              separatorBuilder: (BuildContext context, int index) =>
-                  const Spacer(),
               itemBuilder: (BuildContext context, int index) {
-                return ListTile(
-                  title: Card(
+                return InkWell(
+                    child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Card(
                     color: Theme.of(context).colorScheme.primaryContainer,
                     child: SizedBox(
                       width: 300,
@@ -55,14 +58,32 @@ class _Home extends State<Home> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Icon(
-                                  Icons.audiotrack,
-                                  color: Colors.green,
-                                  size: 30.0,
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(60),
+                                  child: Container(
+                                    height: 25,
+                                    width: 25,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade300,
+                                    ),
+                                    child: image != null
+                                        ? Image.file(
+                                            image,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : networkImg != null && networkImg != ''
+                                            ? Image.network(
+                                                networkImg,
+                                                fit: BoxFit.cover,
+                                              )
+                                            : Image.asset('web/assets/ghost-golfing.jpg'),
+                                  ),
                                 ),
                                 FilledButton(
+                                    style: FilledButton.styleFrom(
+                                        backgroundColor: Colors.green),
                                     onPressed: () {},
-                                    child: const Text('Entrar'))
+                                    child: const Text('Jogue Agora!'))
                               ],
                             ),
                           )
@@ -70,7 +91,7 @@ class _Home extends State<Home> {
                       ),
                     ),
                   ),
-                );
+                ));
               },
             )),
       ),
@@ -85,16 +106,28 @@ class _Home extends State<Home> {
         selectedIndex: currentPageIndex,
         destinations: const <Widget>[
           NavigationDestination(
-            icon: Icon(Icons.home_outlined, color: Colors.black26,),
+            icon: Icon(
+              Icons.home_outlined,
+              color: Colors.black45,
+              size: 35,
+            ),
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.notifications_sharp, color: Colors.black26,),
-            label: 'Notifications',
+            icon: Icon(
+              Icons.person,
+              color: Colors.black45,
+              size: 35,
+            ),
+            label: 'Equipe',
           ),
           NavigationDestination(
-            icon: Icon(Icons.messenger_sharp, color: Colors.black26,),
-            label: 'Messages',
+            icon: Icon(
+              Icons.add,
+              color: Colors.black45,
+              size: 35,
+            ),
+            label: 'Novo Jogo',
           ),
         ],
       ),
