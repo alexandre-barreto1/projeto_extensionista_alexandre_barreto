@@ -31,7 +31,6 @@ class _Home extends State<Home> {
       body: Center(
         child: Container(
             padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-            width: 600,
             color: const Color(0xff576196),
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 33),
@@ -43,41 +42,20 @@ class _Home extends State<Home> {
                   child: Card(
                     color: Theme.of(context).colorScheme.primaryContainer,
                     child: SizedBox(
-                      width: 300,
-                      height: 200,
                       child: Column(
                         children: <Widget>[
                           Image.asset(
                             'web/assets/ghost-golfing.jpg',
                             fit: BoxFit.cover,
-                            width: 300,
-                            height: 140,
                           ),
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                            padding: const EdgeInsets.fromLTRB(20, 5, 20, 7),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(60),
-                                  child: Container(
-                                    height: 25,
-                                    width: 25,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.shade300,
-                                    ),
-                                    child: image != null
-                                        ? Image.file(
-                                            image,
-                                            fit: BoxFit.cover,
-                                          )
-                                        : networkImg != null && networkImg != ''
-                                            ? Image.network(
-                                                networkImg,
-                                                fit: BoxFit.cover,
-                                              )
-                                            : Image.asset('web/assets/ghost-golfing.jpg'),
-                                  ),
+                                const CircleAvatar(
+                                  radius: 13,
+                                  backgroundImage: NetworkImage('web/assets/ghost-golfing.jpg'),
                                 ),
                                 FilledButton(
                                     style: FilledButton.styleFrom(
@@ -131,6 +109,59 @@ class _Home extends State<Home> {
           ),
         ],
       ),
+      drawer: const NavigationDrawer(),
     );
   }
+}
+
+class NavigationDrawer extends StatelessWidget {
+  const NavigationDrawer({super.key});
+
+  @override
+  Widget build(BuildContext context) => Drawer(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        buildHeader(context),
+        buildMenuItems(context)
+      ],
+    ),
+  );
+
+  Widget buildHeader(BuildContext context) => Container();
+
+  Widget buildMenuItems(BuildContext context) => Container(
+    padding: const EdgeInsets.all(24),
+    child: Wrap(
+      runSpacing: 16,
+      children:
+        [
+          ListTile(
+            leading: const Icon(Icons.home_outlined),
+            title: const Text('Home'),
+            onTap: (){},
+          ),
+          ListTile(
+          leading: const Icon(Icons.person),
+          title: const Text('Usuários'),
+          onTap: (){},
+        ),
+          ListTile(
+            leading: const Icon(Icons.file_open),
+            title: const Text('Relatórios'),
+            onTap: (){},
+          ),
+          ListTile(
+            leading: const Icon(Icons.games),
+            title: const Text('Jogos'),
+            onTap: (){},
+          ),
+          ListTile(
+            leading: const Icon(Icons.close),
+            title: const Text('Sair'),
+            onTap: (){},
+          )
+        ],
+    ),
+  );
 }
