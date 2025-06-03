@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "488053861316",
+    "project_id": "proj-exte-alexandre",
+    "storage_bucket": "proj-exte-alexandre.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:488053861316:android:15f642c9caa51f2a5b1291",
+        "android_client_info": {
+          "package_name": "com.example.projeto_extensionista_alexandre_barreto"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjAwVOTJzjXf_vlOHPmk-cQciVnYgQcrM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
