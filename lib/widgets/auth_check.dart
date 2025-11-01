@@ -21,6 +21,7 @@ class _AuthCheckState extends State<AuthCheck>{
       builder: (context, authService, _) {
         print("Usuário atual: ${authService.user}");
         if (authService.user == null) {
+          print("AAAA");
           return const LoginPage();
         } else {
           return const HomeScreen();
