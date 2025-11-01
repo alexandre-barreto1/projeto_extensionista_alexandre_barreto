@@ -1,20 +1,25 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:projeto_extensionista_alexandre_barreto/widgets/usuarios.dart';
-
-import 'home.dart';
-import 'jogos.dart';
+import 'package:projeto_extensionista_alexandre_barreto/services/auth-services.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key, required this.title});
-
-  final String title;
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _MyLoginPageState();
 }
 
 class _MyLoginPageState extends State<LoginPage> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  final formKey = GlobalKey<FormState>();
+  final email = TextEditingController();
+  final senha = TextEditingController();
+
   int currentPageIndex = 0;
   bool isLoggedIn = false;
   bool? isChecked = false;
@@ -36,93 +41,32 @@ class _MyLoginPageState extends State<LoginPage> {
             child: Divider(height: 1, thickness: 3, color: Colors.red),
           ),
         ),
-        body: isLoggedIn ? <Widget>[
-          //Home
-          const HomePage(),
-          //Usuarios
-          const UsuariosPage(),
-          //Jogos
-          const JogosPage(),
-        ][currentPageIndex]
-        :const LoginBody(isChecked),
-      bottomNavigationBar: isLoggedIn ? NavigationBar(
-        destinations: const <Widget>[
-          NavigationDestination(
-            icon: Icon(
-              Icons.home_outlined,
-              color: Colors.black45,
-              size: 35,
-            ),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(
-              Icons.person,
-              color: Colors.black45,
-              size: 35,
-            ),
-            label: 'Equipe',
-          ),
-          NavigationDestination(
-            icon: Icon(
-              Icons.games,
-              color: Colors.black45,
-              size: 35,
-            ),
-            label: 'Jogos',
-          ),
-          NavigationDestination(
-            icon: Icon(
-              Icons.file_copy,
-              color: Colors.black45,
-              size: 35,
-            ),
-            label: 'Relatórios',
-          ),
-        ],
-        selectedIndex: currentPageIndex,
-        onDestinationSelected: (int index) {
-          setState(() {
-            currentPageIndex = index;
-          });
-        },
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        indicatorColor: Colors.purple,
-      ): null,
-    );
-  }
-}
-
-
-class LoginBody extends StatelessWidget{
-  LoginBody(bool? isChecked);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-        child: SizedBox(
+        body: Center(
+            child: SizedBox(
           width: 250,
           height: 500,
           child: Column(
             textDirection: TextDirection.ltr,
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(0, 50, 0, 0),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 50, 0, 0),
                 child: TextField(
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelStyle: TextStyle(fontSize: 20),
                       labelText: 'E-mail'),
+                      controller: email,
                 ),
               ),
-              const Padding(
+              Padding(
                 padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
                 child: TextField(
                   obscureText: true,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelStyle: TextStyle(fontSize: 20),
                       labelText: 'Password'),
+                      controller: senha,
                 ),
               ),
               Padding(
@@ -131,10 +75,10 @@ class LoginBody extends StatelessWidget{
                     text: const TextSpan(
                         style: TextStyle(color: Colors.blue),
                         children: <TextSpan>[
-                          TextSpan(
-                              text: 'Esqueceu a senha?',
-                              style: TextStyle(fontSize: 20)),
-                        ])),
+                      TextSpan(
+                          text: 'Esqueceu a senha?',
+                          style: TextStyle(fontSize: 20)),
+                    ])),
               ),
               CheckboxListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 01),
@@ -144,12 +88,10 @@ class LoginBody extends StatelessWidget{
                 ),
                 value: isChecked,
                 onChanged: (newValue) {
-                  setState(() {
-                    isChecked = newValue;
-                  });
+                  isChecked = newValue;
                 },
                 controlAffinity:
-                ListTileControlAffinity.platform, //  <-- leading Checkbox
+                    ListTileControlAffinity.platform, //  <-- leading Checkbox
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(0, 70, 0, 0),
@@ -158,14 +100,20 @@ class LoginBody extends StatelessWidget{
                   height: 50, // <-- Your height
                   child: FilledButton(
                       onPressed: () {
-                        //_login(context);
+                        login();
                       },
                       child: const Text('Entrar')),
                 ),
               )
             ],
           ),
-        ));
+        )));
+  }
+
+  login() async {
+    await context.read<AuthService>().login(email.text, senha.text);
   }
 
 }
+
+
