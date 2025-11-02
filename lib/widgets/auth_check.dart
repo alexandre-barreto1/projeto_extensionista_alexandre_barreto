@@ -19,9 +19,7 @@ class _AuthCheckState extends State<AuthCheck>{
   Widget build(BuildContext context) {
     return Consumer<AuthService>(
       builder: (context, authService, _) {
-        print("Usuário atual: ${authService.user}");
         if (authService.user == null) {
-          print("AAAA");
           return const LoginPage();
         } else {
           return const HomeScreen();

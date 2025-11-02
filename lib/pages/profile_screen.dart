@@ -436,6 +436,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void logout() async{
+    await context.read<AuthService>().logout();
+  }
+
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
@@ -464,8 +468,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: const Text('Cancelar'),
           ),
           TextButton(
-            onPressed: () async {
-              await context.read<AuthService>().logout();
+            onPressed: () {
+              logout();
+              Navigator.of(context).pop();
+              Navigator.of(context).pop(
+                MaterialPageRoute(builder: (context) => const LoginPage())
+              );
             },
             child: const Text(
               'Sair',

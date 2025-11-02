@@ -1,53 +1,225 @@
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
+import 'package:projeto_extensionista_alexandre_barreto/model/project.dart';
+import 'package:projeto_extensionista_alexandre_barreto/repository/projetos_repository.dart';
 import 'game_detail_screen.dart';
 
-class GamesScreen extends StatelessWidget {
+class GamesScreen extends StatefulWidget {
   const GamesScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final games = [
-      {
-        'name': 'Dream Quest',
-        'genre': 'Aventura/RPG',
-        'status': 'Em Desenvolvimento',
-        'description': 'Um jogo de aventura em mundo aberto com elementos de RPG.',
-        'qrData': 'https://sleepkteam.com/games/dream-quest',
-        'color': const Color(0xFF6A1B9A),
-        'icon': Icons.explore,
-      },
-      {
-        'name': 'Night Runner',
-        'genre': 'Plataforma',
-        'status': 'Lançado',
-        'description': 'Jogo de plataforma 2D com mecânicas de parkour noturno.',
-        'qrData': 'https://sleepkteam.com/games/night-runner',
-        'color': const Color(0xFF0D47A1),
-        'icon': Icons.directions_run,
-      },
-      {
-        'name': 'Sleepy Puzzle',
-        'genre': 'Puzzle',
-        'status': 'Beta',
-        'description': 'Jogo de quebra-cabeças relaxante com temática onírica.',
-        'qrData': 'https://sleepkteam.com/games/sleepy-puzzle',
-        'color': const Color(0xFF00838F),
-        'icon': Icons.extension,
-      },
-    ];
+  State<GamesScreen> createState() => _GamesScreenState();
+}
 
+class _GamesScreenState extends State<GamesScreen> {
+  bool _isLoading = true;
+  List<Project> _projetos = [];
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarProjetos(); // Chama o método para carregar os dados
+  }
+
+  Future<void> _carregarProjetos() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final projetosRepository = Provider.of<ProjetosRepository>(context, listen: false);
+      final projetos = await projetosRepository.listAll();
+
+      setState(() {
+        _projetos = projetos;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print("Erro ao carregar projetos: $e");
+      setState(() {
+        _errorMessage = "Falha ao carregar jogos. Tente novamente.";
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Método auxiliar para converter Project em Map para o GameDetailScreen
+  Map<String, dynamic> _projectToGameMap(Project project) {
+    return {
+      'name': project.name,
+      'genre': project.genre ?? 'Não especificado',
+      'status': project.status,
+      'description': 'Projeto desenvolvido pela equipe SleepK Team',
+      'qrData': project.qrcode ?? 'https://sleepkteam.com/games/${project.id}',
+      'color': _getColorByGenre(project.genre ?? ''),
+      'icon': _getIconByGenre(project.genre ?? ''),
+    };
+  }
+
+  Color _getColorByGenre(String genre) {
+    switch (genre.toLowerCase()) {
+      case 'aventura':
+      case 'aventura/rpg':
+      case 'rpg':
+        return const Color(0xFF6A1B9A);
+      case 'plataforma':
+        return const Color(0xFF0D47A1);
+      case 'puzzle':
+        return const Color(0xFF00838F);
+      case 'ação':
+        return const Color(0xFFD32F2F);
+      case 'estratégia':
+        return const Color(0xFF388E3C);
+      default:
+        return const Color(0xFF3F4B7C);
+    }
+  }
+
+  IconData _getIconByGenre(String genre) {
+    switch (genre.toLowerCase()) {
+      case 'aventura':
+      case 'aventura/rpg':
+      case 'rpg':
+        return Icons.explore;
+      case 'plataforma':
+        return Icons.directions_run;
+      case 'puzzle':
+        return Icons.extension;
+      case 'ação':
+        return Icons.flash_on;
+      case 'estratégia':
+        return Icons.psychology;
+      default:
+        return Icons.games;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Nossos Jogos'),
         backgroundColor: const Color(0xFF3F4B7C),
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _carregarProjetos,
+            tooltip: 'Recarregar',
+          ),
+        ],
       ),
-      body: ListView.builder(
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              color: Color(0xFF3F4B7C),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Carregando jogos...',
+              style: TextStyle(
+                fontSize: 16,
+                color: Color(0xFF3F4B7C),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Colors.red,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              style: const TextStyle(fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _carregarProjetos,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Tentar Novamente'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3F4B7C),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_projetos.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.games_outlined,
+              size: 64,
+              color: Colors.grey,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Nenhum jogo cadastrado ainda',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Em breve novos jogos serão adicionados!',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _carregarProjetos,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Atualizar'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3F4B7C),
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _carregarProjetos,
+      color: const Color(0xFF3F4B7C),
+      child: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: games.length,
+        itemCount: _projetos.length,
         itemBuilder: (context, index) {
-          final game = games[index];
+          final project = _projetos[index];
+          final gameMap = _projectToGameMap(project);
+
           return Card(
             margin: const EdgeInsets.only(bottom: 16),
             child: InkWell(
@@ -55,7 +227,7 @@ class GamesScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => GameDetailScreen(game: game),
+                    builder: (context) => GameDetailScreen(game: gameMap),
                   ),
                 );
               },
@@ -69,8 +241,8 @@ class GamesScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          game['color'] as Color,
-                          (game['color'] as Color).withOpacity(0.7),
+                          gameMap['color'] as Color,
+                          (gameMap['color'] as Color).withOpacity(0.7),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -82,7 +254,7 @@ class GamesScreen extends StatelessWidget {
                     ),
                     child: Center(
                       child: Icon(
-                        game['icon'] as IconData,
+                        gameMap['icon'] as IconData,
                         size: 80,
                         color: Colors.white,
                       ),
@@ -98,7 +270,7 @@ class GamesScreen extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                game['name'] as String,
+                                project.name,
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -107,16 +279,16 @@ class GamesScreen extends StatelessWidget {
                             ),
                             Chip(
                               label: Text(
-                                game['status'] as String,
+                                project.status,
                                 style: const TextStyle(fontSize: 12),
                               ),
-                              backgroundColor: const Color(0xFF4CAF50).withOpacity(0.2),
+                              backgroundColor: _getStatusColor(project.status),
                             ),
                           ],
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Gênero: ${game['genre']}',
+                          'Gênero: ${project.genre ?? "Não especificado"}',
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.grey,
@@ -125,7 +297,7 @@ class GamesScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          game['description'] as String,
+                          gameMap['description'] as String,
                           style: const TextStyle(fontSize: 14, height: 1.4),
                         ),
                         const SizedBox(height: 12),
@@ -137,7 +309,7 @@ class GamesScreen extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => GameDetailScreen(game: game),
+                                    builder: (context) => GameDetailScreen(game: gameMap),
                                   ),
                                 );
                               },
@@ -156,5 +328,23 @@ class GamesScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'lançado':
+      case 'concluído':
+        return const Color(0xFF4CAF50).withOpacity(0.2);
+      case 'em desenvolvimento':
+      case 'desenvolvimento':
+        return const Color(0xFFFF9800).withOpacity(0.2);
+      case 'beta':
+      case 'teste':
+        return const Color(0xFF2196F3).withOpacity(0.2);
+      case 'pausado':
+        return const Color(0xFF9E9E9E).withOpacity(0.2);
+      default:
+        return const Color(0xFF4CAF50).withOpacity(0.2);
+    }
   }
 }

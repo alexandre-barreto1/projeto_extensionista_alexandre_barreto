@@ -180,44 +180,6 @@ class GameDetailScreen extends StatelessWidget {
                     style: const TextStyle(fontSize: 14, height: 1.5),
                   ),
                   const SizedBox(height: 16),
-                  // Image Gallery below description
-                  const Text(
-                    'Imagens do Jogo',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  GridView.count(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    children: [
-                      _buildGameImage(
-                        game['color'] as Color,
-                        Icons.videogame_asset,
-                        'Gameplay 1',
-                      ),
-                      _buildGameImage(
-                        game['color'] as Color,
-                        Icons.landscape,
-                        'Ambiente',
-                      ),
-                      _buildGameImage(
-                        game['color'] as Color,
-                        Icons.person,
-                        'Personagem',
-                      ),
-                      _buildGameImage(
-                        game['color'] as Color,
-                        Icons.emoji_events,
-                        'Conquistas',
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
