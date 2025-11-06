@@ -4,52 +4,12 @@ import 'package:projeto_extensionista_alexandre_barreto/pages/review_screen.dart
 
 import '../widgets/qr_code_widget.dart';
 
+import 'dart:typed_data';
+
 class GameDetailScreen extends StatelessWidget {
   final Map<String, dynamic> game;
 
   const GameDetailScreen({Key? key, required this.game}) : super(key: key);
-
-  Widget _buildGameImage(Color color, IconData icon, String label) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            color.withOpacity(0.8),
-            color.withOpacity(0.5),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            spreadRadius: 1,
-            blurRadius: 3,
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 48,
-            color: Colors.white,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,10 +40,9 @@ class GameDetailScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Center(
-                child: Icon(
-                  game['icon'] as IconData,
-                  size: 100,
-                  color: Colors.white,
+                child: Image.memory(
+                  game['imagemPrincipal'] as Uint8List,
+                  fit: BoxFit.contain,
                 ),
               ),
             ),
