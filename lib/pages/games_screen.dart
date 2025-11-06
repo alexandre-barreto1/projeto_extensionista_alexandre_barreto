@@ -1,10 +1,10 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:projeto_extensionista_alexandre_barreto/model/project.dart';
 import 'package:projeto_extensionista_alexandre_barreto/repository/projetos_repository.dart';
 import 'game_detail_screen.dart';
-import 'game_screen_helper.dart';
 
 class GamesScreen extends StatefulWidget {
   const GamesScreen({Key? key}) : super(key: key);
@@ -17,7 +17,6 @@ class _GamesScreenState extends State<GamesScreen> {
   bool _isLoading = true;
   List<Project> _projetos = [];
   String? _errorMessage;
-  List<Map<String, Object>> _gamesList = []; // Mudança aqui
 
   @override
   void initState() {
@@ -39,19 +38,6 @@ class _GamesScreenState extends State<GamesScreen> {
         _projetos = projetos;
         _isLoading = false;
       });
-
-      // Converte todos os projetos para maps de forma assíncrona
-      final gamesListFutures = projetos.map((project) =>
-          GamesScreenHelper.projectToGameMap(project, _getColorByGenre)
-      ).toList();
-
-      final gamesList = await Future.wait(gamesListFutures);
-
-      setState(() {
-        _gamesList = gamesList;
-        _isLoading = false;
-      });
-
     } catch (e) {
       print("Erro ao carregar projetos: $e");
       setState(() {
@@ -59,6 +45,38 @@ class _GamesScreenState extends State<GamesScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  // Método auxiliar para converter Project em Map para o GameDetailScreen
+  Map<String, Object> _projectToGameMap(Project project) {
+    String? base64String = project.imagemprincipal;
+
+    // Inicializa com um Uint8List vazio
+    Uint8List bytes = Uint8List(0);
+
+    // Se houver base64 válido
+    if (base64String != null && base64String.isNotEmpty) {
+      // Remove prefixo se necessário
+      if (base64String.startsWith('data:image')) {
+        base64String = base64String.split(',').last;
+      }
+
+      try {
+        bytes = base64Decode(base64String);
+      } catch (e) {
+        print('Erro ao decodificar imagem base64: $e');
+      }
+    }
+
+    return {
+      'name': project.name,
+      'genre': project.genero ?? 'Não especificado',
+      'status': project.status,
+      'description': 'Projeto desenvolvido pela equipe SleepK Team',
+      'qrData': project.qrcode ?? 'https://sleepkteam.com/games/${project.id}',
+      'color': _getColorByGenre(project.genero ?? ''),
+      'imagemPrincipal': bytes,
+    };
   }
 
   Color _getColorByGenre(String genre) {
@@ -202,7 +220,7 @@ class _GamesScreenState extends State<GamesScreen> {
         itemCount: _projetos.length,
         itemBuilder: (context, index) {
           final project = _projetos[index];
-          final gameMap = _gamesList[index];
+          final gameMap = _projectToGameMap(project);
 
           return Card(
             margin: const EdgeInsets.only(bottom: 16),
@@ -237,10 +255,21 @@ class _GamesScreenState extends State<GamesScreen> {
                       ),
                     ),
                     child: Center(
-                      child: Image.memory(
-                        gameMap['imagemPrincipal'] as Uint8List,
-                        fit: BoxFit.contain,
-                      ),
+                      child:
+                      (gameMap['imagemPrincipal'] != null)
+                          ?
+                        const Icon(
+                          Icons.extension,
+                          size: 100,
+                          color: Colors.white,
+                        )
+                       :
+                      Image.memory(
+                          gameMap['imagemPrincipal'] as Uint8List,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.contain,
+                        )
                     ),
                   ),
                   Padding(

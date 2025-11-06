@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../model/projeto_data.dart';
 
-class ProjetosRepository extends ChangeNotifier {
+class ProjetosDataRepository extends ChangeNotifier {
 
   Future<ProjectData> buscarProjetoData(String projetoId) async {
     Uri uri = Uri.parse('http://localhost:8080/projeto-data/${projetoId}');
