@@ -4,16 +4,18 @@ class Project {
   final String name;
   final String status;
   final String? qrcode;
-  final String? genre;
+  final String? genero;
+  final String? imagemprincipal;
 
-  Project(this.id, this.name, this.status, this.qrcode, this.genre);
+  Project(this.id, this.name, this.status, this.qrcode, this.genero, this.imagemprincipal);
 
   Project.fromJson(Map<String, dynamic> json)
       : id = json['id'] as String,
       name = json['name'] as String,
       status = json['status'] as String,
       qrcode = json['qrcode'] as String?,
-      genre = json['genre'] as String?;
+      genero = json['genero'] as String?,
+      imagemprincipal = json['imagemprincipal'] as String?;
 
 
   Map<String, dynamic> toJson() {
@@ -22,7 +24,8 @@ class Project {
       'name' : name,
       'status' : status,
       'qrcode' : qrcode,
-      'genre' : genre
+      'genero' : genero,
+      'imagemprincipal': imagemprincipal
     };
   }
 

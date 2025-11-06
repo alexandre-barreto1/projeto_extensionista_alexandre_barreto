@@ -1,21 +1,21 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
-import 'package:projeto_extensionista_alexandre_barreto/model/project.dart';
 import 'package:http/http.dart' as http;
+
+import '../model/projeto_data.dart';
 
 class ProjetosRepository extends ChangeNotifier {
 
-  Future<List<Project>> buscarProjetoData(String projetoId) async {
-    Uri uri = Uri.parse('http://localhost:8080/get/projeto-data');
-    List<Project> projetos = [];
+  Future<ProjectData> buscarProjetoData(String projetoId) async {
+    Uri uri = Uri.parse('http://localhost:8080/projeto-data/${projetoId}');
+    ProjectData projetoData = {} as ProjectData;
     try {
-      final response = await http.post(
+      final response = await http.get(
           uri,
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8', // Specify content type as JSON
           },
-        body: projetoId,
       );
 
       if (response.statusCode == 200) {
@@ -24,9 +24,7 @@ class ProjetosRepository extends ChangeNotifier {
         // Decode JSON response if applicable
         final decodedData = jsonDecode(response.body);
 
-        for (var proj in decodedData) {
-          projetos.add(Project.fromJson(proj));
-        }
+        projetoData = ProjectData.fromJson(decodedData);
       } else {
         // Request failed
         print('Request failed with status: ${response.statusCode}');
@@ -36,6 +34,6 @@ class ProjetosRepository extends ChangeNotifier {
       print('Error during request: $e');
     }
 
-    return projetos;
+    return projetoData;
   }
 }

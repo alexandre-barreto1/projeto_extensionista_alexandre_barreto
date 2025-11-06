@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:projeto_extensionista_alexandre_barreto/model/project.dart';
@@ -46,15 +48,38 @@ class _GamesScreenState extends State<GamesScreen> {
   }
 
   // Método auxiliar para converter Project em Map para o GameDetailScreen
-  Map<String, dynamic> _projectToGameMap(Project project) {
+  Map<String, Object> _projectToGameMap(Project project) {
+    String? base64String = project.imagemprincipal;
+
+    // Inicializa com um Uint8List vazio
+    Uint8List bytes = Uint8List(0);
+
+    // Se houver base64 válido
+    if (base64String != null && base64String.isNotEmpty) {
+      // Remove prefixo se necessário
+      if (base64String.startsWith('data:image')) {
+        base64String = base64String.split(',').last;
+      }
+
+      try {
+        bytes = base64Decode(base64String);
+      } catch (e) {
+        print('Erro ao decodificar imagem base64: $e');
+      }
+    } else {
+      base64String = "iVBORw0KGgoAAAANSUhEUgAABAAAAAYACAIAAABn4K39AACox2NhQlgAAKjHanVtYgAAAB5qdW1kYzJwYQARABCAAACqADibcQNjMnBhAAAANvtqdW1iAAAAR2p1bWRjMm1hABEAEIAAAKoAOJtxA3VybjpjMnBhOjc0YjcwZTQyLTdlNzQtNGM4OS1hYWY0LTZkMmVlYzBjODkyMgAAAAHBanVtYgAAAClqdW1kYzJhcwARABCAAACqADibcQNjMnBhLmFzc2VydGlvbnMAAAAA5Wp1bWIAAAApanVtZGNib3IAEQAQgAAAqgA4m3EDYzJwYS5hY3Rpb25zLnYyAAAAALRjYm9yoWdhY3Rpb25zgqNmYWN0aW9ubGMycGEuY3JlYXRlZG1zb2Z0d2FyZUFnZW50v2RuYW1lZkdQVC00b/9xZGlnaXRhbFNvdXJjZVR5cGV4Rmh0dHA6Ly9jdi5pcHRjLm9yZy9uZXdzY29kZXMvZGln";
+
+      bytes = base64Decode(base64String);
+    }
+
     return {
       'name': project.name,
-      'genre': project.genre ?? 'Não especificado',
+      'genre': project.genero ?? 'Não especificado',
       'status': project.status,
       'description': 'Projeto desenvolvido pela equipe SleepK Team',
       'qrData': project.qrcode ?? 'https://sleepkteam.com/games/${project.id}',
-      'color': _getColorByGenre(project.genre ?? ''),
-      'icon': _getIconByGenre(project.genre ?? ''),
+      'color': _getColorByGenre(project.genero ?? ''),
+      'imagemPrincipal': bytes,
     };
   }
 
@@ -74,25 +99,6 @@ class _GamesScreenState extends State<GamesScreen> {
         return const Color(0xFF388E3C);
       default:
         return const Color(0xFF3F4B7C);
-    }
-  }
-
-  IconData _getIconByGenre(String genre) {
-    switch (genre.toLowerCase()) {
-      case 'aventura':
-      case 'aventura/rpg':
-      case 'rpg':
-        return Icons.explore;
-      case 'plataforma':
-        return Icons.directions_run;
-      case 'puzzle':
-        return Icons.extension;
-      case 'ação':
-        return Icons.flash_on;
-      case 'estratégia':
-        return Icons.psychology;
-      default:
-        return Icons.games;
     }
   }
 
@@ -253,10 +259,11 @@ class _GamesScreenState extends State<GamesScreen> {
                       ),
                     ),
                     child: Center(
-                      child: Icon(
-                        gameMap['icon'] as IconData,
-                        size: 80,
-                        color: Colors.white,
+                      child: Image.memory(
+                        gameMap['imagemPrincipal'] as Uint8List,
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),
@@ -288,7 +295,7 @@ class _GamesScreenState extends State<GamesScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Gênero: ${project.genre ?? "Não especificado"}',
+                          'Gênero: ${project.genero ?? "Não especificado"}',
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.grey,
