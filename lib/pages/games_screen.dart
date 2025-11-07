@@ -21,7 +21,7 @@ class _GamesScreenState extends State<GamesScreen> {
   @override
   void initState() {
     super.initState();
-    _carregarProjetos(); // Chama o método para carregar os dados
+    _carregarProjetos();
   }
 
   Future<void> _carregarProjetos() async {
@@ -69,6 +69,7 @@ class _GamesScreenState extends State<GamesScreen> {
     }
 
     return {
+      'id': project.id, // IMPORTANTE: Adiciona o ID do projeto
       'name': project.name,
       'genre': project.genero ?? 'Não especificado',
       'status': project.status,
@@ -255,21 +256,25 @@ class _GamesScreenState extends State<GamesScreen> {
                       ),
                     ),
                     child: Center(
-                      child:
-                      (gameMap['imagemPrincipal'] != null)
-                          ?
-                        const Icon(
-                          Icons.extension,
-                          size: 100,
-                          color: Colors.white,
-                        )
-                       :
-                      Image.memory(
-                          gameMap['imagemPrincipal'] as Uint8List,
-                          width: 80,
-                          height: 80,
-                          fit: BoxFit.contain,
-                        )
+                      child: (gameMap['imagemPrincipal'] as Uint8List).isNotEmpty
+                          ? Image.memory(
+                        gameMap['imagemPrincipal'] as Uint8List,
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(
+                            Icons.extension,
+                            size: 80,
+                            color: Colors.white,
+                          );
+                        },
+                      )
+                          : const Icon(
+                        Icons.extension,
+                        size: 80,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                   Padding(

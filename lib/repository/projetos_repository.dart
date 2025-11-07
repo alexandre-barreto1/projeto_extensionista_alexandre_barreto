@@ -4,6 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:projeto_extensionista_alexandre_barreto/model/project.dart';
 import 'package:http/http.dart' as http;
 
+import '../model/projeto_avaliacao.dart';
+
 class ProjetosRepository extends ChangeNotifier {
 
   // Future<Project> save(Project project) async {
@@ -70,5 +72,38 @@ class ProjetosRepository extends ChangeNotifier {
     }
 
     return projetos;
+  }
+
+
+  Future<ProjetoAvaliacao> salvarAvaliacao(ProjetoAvaliacao projectAvalicao) async {
+    Uri uri = Uri.parse('http://localhost:8080/projeto-avaliacao');
+    String body = json.encode(projectAvalicao.toJson());
+    try {
+      final response = await http.post(
+        uri,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8', // Specify content type as JSON
+        },
+          body: body
+      );
+
+      if (response.statusCode == 200) {
+        // Request successful, process the response body
+        print('Response data: ${response.body}');
+        // Decode JSON response if applicable
+        final decodedData = jsonDecode(response.body);
+
+        projectAvalicao = ProjetoAvaliacao.fromJson(decodedData);
+
+      } else {
+        // Request failed
+        print('Request failed with status: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Handle any errors during the request
+      print('Error during request: $e');
+    }
+
+    return projectAvalicao;
   }
 }

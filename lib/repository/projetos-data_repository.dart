@@ -9,7 +9,7 @@ class ProjetosDataRepository extends ChangeNotifier {
 
   Future<ProjectData> buscarProjetoData(String projetoId) async {
     Uri uri = Uri.parse('http://localhost:8080/projeto-data/${projetoId}');
-    ProjectData projetoData = {} as ProjectData;
+    ProjectData projetoData = new ProjectData("", "", "", "", "");
     try {
       final response = await http.get(
           uri,
@@ -25,6 +25,7 @@ class ProjetosDataRepository extends ChangeNotifier {
         final decodedData = jsonDecode(response.body);
 
         projetoData = ProjectData.fromJson(decodedData);
+
       } else {
         // Request failed
         print('Request failed with status: ${response.statusCode}');
