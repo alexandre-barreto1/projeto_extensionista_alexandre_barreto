@@ -39,35 +39,38 @@ class TeamMemberRepository extends ChangeNotifier {
     return teamMember;
   }
 
-  Future<TeamMember> buscarProjetoData(String userId) async {
-    Uri uri = Uri.parse('http://localhost:8080/projeto-data/${userId}');
-    TeamMember teamMember = TeamMember("", "", "", "", "");
-    try {
-      final response = await http.get(
+Future<TeamMember> update(TeamMember teamMember) async {
+  Uri uri = Uri.parse('http://localhost:8080/user');
+
+  // Encode the data to a JSON string
+  String body = json.encode(teamMember.toJson());
+
+  try {
+    final response = await http.post(
         uri,
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8', // Specify content type as JSON
         },
-      );
+        body: body,
+    );
 
-      if (response.statusCode == 200) {
-        // Request successful, process the response body
-        print('Response data: ${response.body}');
-        // Decode JSON response if applicable
-        final decodedData = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      // Request successful, process the response body
+      print('Response data: ${response.body}');
+      // Decode JSON response if applicable
 
-        teamMember = TeamMember.fromJson(decodedData);
+      teamMember = TeamMember.fromJson(response.body as Map<String, dynamic>);
 
-      } else {
-        // Request failed
-        print('Request failed with status: ${response.statusCode}');
-      }
-    } catch (e) {
-      // Handle any errors during the request
-      print('Error during request: $e');
+    } else {
+      // Request failed
+      print('Request failed with status: ${response.statusCode}');
     }
-
-    return teamMember;
+  } catch (e) {
+    // Handle any errors during the request
+    print('Error during request: $e');
   }
+
+  return teamMember;
+}
 
 }

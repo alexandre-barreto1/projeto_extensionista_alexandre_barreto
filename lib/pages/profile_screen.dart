@@ -229,47 +229,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Account Actions
-            Card(
-              elevation: 2,
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.notifications, color: Color(0xFF3F4B7C)),
-                    title: const Text('Notificações'),
-                    trailing: Switch(
-                      value: true,
-                      onChanged: (value) {},
-                      activeColor: const Color(0xFF4CAF50),
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.language, color: Color(0xFF3F4B7C)),
-                    title: const Text('Idioma'),
-                    trailing: const Text('Português'),
-                    onTap: () {},
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.help, color: Color(0xFF3F4B7C)),
-                    title: const Text('Ajuda e Suporte'),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {},
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.privacy_tip, color: Color(0xFF3F4B7C)),
-                    title: const Text('Privacidade'),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {},
-                  ),
-                ],
-              ),
-            ),
             const SizedBox(height: 24),
-
             // Logout Button
             SizedBox(
               width: double.infinity,
