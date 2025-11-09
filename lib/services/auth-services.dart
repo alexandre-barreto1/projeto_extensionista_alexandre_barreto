@@ -60,5 +60,10 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateUser(TeamMember updatedUser) {
+    _user = updatedUser;
+    notifyListeners();
+  }
+
 
 }

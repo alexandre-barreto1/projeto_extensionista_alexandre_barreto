@@ -46,7 +46,7 @@ Future<TeamMember> update(TeamMember teamMember) async {
   String body = json.encode(teamMember.toJson());
 
   try {
-    final response = await http.post(
+    final response = await http.put(
         uri,
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8', // Specify content type as JSON
@@ -72,5 +72,39 @@ Future<TeamMember> update(TeamMember teamMember) async {
 
   return teamMember;
 }
+
+  Future<void> changePass(String id, String password, String currentPassword) async {
+    Uri uri = Uri.parse('http://localhost:8080/user/change-pass');
+
+    // Encode the data to a JSON string
+    String body = json.encode({
+      'id_usuario' : id,
+      'password' : password,
+      'currentPassword': currentPassword
+    });
+
+    try {
+      final response = await http.put(
+        uri,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8', // Specify content type as JSON
+        },
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        // Request successful, process the response body
+        print('Response data: ${response.body}');
+        // Decode JSON response if applicable
+
+      } else {
+        // Request failed
+        print('Request failed with status: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Handle any errors during the request
+      print('Error during request: $e');
+    }
+  }
 
 }
