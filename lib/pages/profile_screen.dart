@@ -627,13 +627,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: const Text('Cancelar'),
           ),
           TextButton(
-            onPressed: () {
-              logout();
+            onPressed: () async {
+              // Fechar o dialog
               Navigator.of(context).pop();
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const LoginPage()),
-                    (route) => false,
-              );
+
+              // Realizar o logout
+              await context.read<AuthService>().logout();
+
+              // Limpar os campos
+              if (mounted) {
+                _nameController.clear();
+                _emailController.clear();
+                _cargoController.clear();
+                _currentPasswordController.clear();
+                _newPasswordController.clear();
+                _confirmPasswordController.clear();
+              }
+
+              // O AuthCheck vai automaticamente detectar que user == null
+              // e mostrar a tela de login
             },
             child: const Text(
               'Sair',

@@ -13,13 +13,23 @@ class AuthCheck extends StatefulWidget {
   _AuthCheckState createState() => _AuthCheckState();
 }
 
-class _AuthCheckState extends State<AuthCheck>{
-
+class _AuthCheckState extends State<AuthCheck> {
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthService>(
-      builder: (context, authService, _) {
+      builder: (context, authService, child) {
+        print('AuthCheck - Loading: ${authService.isLoading}');
+
+        if (authService.isLoading) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
         if (authService.user == null) {
+          print('AuthCheck - User: ${authService.user?.name ?? "null"}');
           return const LoginPage();
         } else {
           return const HomeScreen();
@@ -27,13 +37,4 @@ class _AuthCheckState extends State<AuthCheck>{
       },
     );
   }
-
-
-  // loading() {
-  //   return const Scaffold(
-  //     body: Center(
-  //       child: CircularProgressIndicator(),
-  //     ),
-  //   );
-  // }
 }

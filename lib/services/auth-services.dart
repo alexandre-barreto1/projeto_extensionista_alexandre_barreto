@@ -1,69 +1,71 @@
 import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
-
 import 'package:http/http.dart' as http;
-import 'dart:convert'; // For JSON encoding/decoding
-
+import 'dart:convert';
 import '../model/team_member.dart';
 
 class AuthService extends ChangeNotifier {
   TeamMember? _user;
-
-  bool isLoading = true;
+  bool isLoading = false;
 
   TeamMember? get user => _user;
 
-
-  login(String email, String senha) async {
-    Uri uri = Uri.parse('http://localhost:8080/session');
-    Map<String, dynamic> data = {
-      'email': email,
-      'password': senha
-    };
-
-    // Encode the data to a JSON string
-    String body = json.encode(data);
-
+  Future<void> login(String email, String senha) async {
     try {
+      isLoading = true;
+      notifyListeners();
+
+      Uri uri = Uri.parse('http://localhost:8080/session');
+      Map<String, dynamic> data = {
+        'email': email,
+        'password': senha
+      };
+
+      String body = json.encode(data);
+
       final response = await http.post(
         uri,
         headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8', // Specify content type as JSON
+          'Content-Type': 'application/json; charset=UTF-8',
         },
         body: body,
       );
 
       if (response.statusCode == 200) {
-        // Request successful, process the response body
         print('Response data: ${response.body}');
-        // Decode JSON response if applicable
-        TeamMember teamMember = TeamMember.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+
+        // Corrigido: primeiro decodifica, depois faz o parse
+        final decodedData = jsonDecode(response.body);
+        TeamMember teamMember = TeamMember.fromJson(decodedData);
 
         _user = teamMember;
+        print("Login realizado com sucesso: ${_user?.name}");
 
-        print("novo loginm: ${_user}");
-
+        isLoading = false;
         notifyListeners();
       } else {
-        // Request failed
         print('Request failed with status: ${response.statusCode}');
+        isLoading = false;
+        notifyListeners();
+        throw Exception('Falha no login: ${response.statusCode}');
       }
     } catch (e) {
-      // Handle any errors during the request
-      print('Error during request: $e');
+      print('Error during login: $e');
+      isLoading = false;
+      _user = null;
+      notifyListeners();
+      rethrow;
     }
   }
 
   Future<void> logout() async {
     _user = null;
     notifyListeners();
+    print('Logout realizado com sucesso');
   }
 
   void updateUser(TeamMember updatedUser) {
     _user = updatedUser;
     notifyListeners();
   }
-
-
 }
