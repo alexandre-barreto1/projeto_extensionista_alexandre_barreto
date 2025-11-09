@@ -1,5 +1,9 @@
+// lib/pages/review_screen.dart
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../model/projeto_avaliacao.dart';
+import '../repository/projetos_repository.dart';
 
 class ReviewScreen extends StatefulWidget {
   final Map<String, dynamic> game;
@@ -18,6 +22,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
   double performanceRating = 3.0;
   double interfaceRating = 3.0;
   final _commentController = TextEditingController();
+
+  // Adicionar estado de loading
+  bool _isSaving = false;
 
   double get averageRating {
     return (gameplayRating + graphicsRating + soundRating +
@@ -140,7 +147,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: _isSaving ? null : () {
                   _submitReview(context);
                 },
                 style: ElevatedButton.styleFrom(
@@ -151,7 +158,16 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
+                child: _isSaving
+                    ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+                    : const Text(
                   'Enviar Avaliação',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
@@ -236,45 +252,169 @@ class _ReviewScreenState extends State<ReviewScreen> {
     );
   }
 
-  void _submitReview(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Avaliação Enviada!'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.check_circle,
-              color: Color(0xFF4CAF50),
-              size: 64,
+  Future<void> _submitReview(BuildContext context) async {
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      // Obter o ID do projeto do game map
+      final projectId = widget.game['id'] as String?;
+
+      if (projectId == null || projectId.isEmpty) {
+        throw Exception('ID do projeto não encontrado');
+      }
+
+      // Criar objeto ProjetoAvaliacao
+      // Converter ratings de 0-5 para 0-10 multiplicando por 2
+      final avaliacao = ProjetoAvaliacao(
+        projectId,
+        (gameplayRating * 2).round(),      // gameplay
+        (soundRating * 2).round(),         // sound
+        (storyRating * 2).round(),         // story
+        (performanceRating * 2).round(),   // performance
+        (interfaceRating * 2).round(),     // gameInterface
+        _commentController.text.isEmpty ? null : _commentController.text, // comentario
+      );
+
+      // Obter o repository via Provider
+      final projetosRepository = Provider.of<ProjetosRepository>(
+        context,
+        listen: false,
+      );
+
+      // Chamar o método salvarAvaliacao
+      final avaliacaoSalva = await projetosRepository.salvarAvaliacao(avaliacao);
+
+      setState(() {
+        _isSaving = false;
+      });
+
+      // Mostrar dialog de sucesso
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Row(
+              children: [
+                Icon(
+                  Icons.check_circle,
+                  color: Color(0xFF4CAF50),
+                  size: 32,
+                ),
+                SizedBox(width: 8),
+                Text('Avaliação Enviada!'),
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Obrigado por avaliar ${widget.game['name']}!',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Obrigado por avaliar ${widget.game['name']}!',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Nota média: ${averageRating.toStringAsFixed(1)}/5.0',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Divider(),
+                const SizedBox(height: 8),
+                const Text(
+                  'Detalhes da avaliação:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                _buildScoreRow('🎮 Gameplay', gameplayRating),
+                _buildScoreRow('🎨 Gráficos', graphicsRating),
+                _buildScoreRow('🔊 Som', soundRating),
+                _buildScoreRow('📖 História', storyRating),
+                _buildScoreRow('⚡ Performance', performanceRating),
+                _buildScoreRow('🖥️ Interface', interfaceRating),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Nota média: ${averageRating.toStringAsFixed(1)}/5.0',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Fechar dialog
+                  Navigator.of(context).pop(); // Voltar para detalhes do jogo
+                },
+                child: const Text(
+                  'OK',
+                  style: TextStyle(
+                    color: Color(0xFF3F4B7C),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isSaving = false;
+      });
+
+      // Mostrar erro
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.error, color: Colors.red, size: 32),
+                SizedBox(width: 8),
+                Text('Erro ao Enviar'),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-            },
-            child: const Text('OK'),
+            content: Text(
+              'Não foi possível enviar sua avaliação.\n\nErro: ${e.toString()}',
+              style: const TextStyle(fontSize: 14),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+
+      print('Erro ao salvar avaliação: $e');
+    }
+  }
+
+  Widget _buildScoreRow(String label, double score) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 14)),
+          Text(
+            score.toStringAsFixed(1),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF4CAF50),
+            ),
           ),
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
   }
 }
