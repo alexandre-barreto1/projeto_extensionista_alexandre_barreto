@@ -1,12 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:projeto_extensionista_alexandre_barreto/pages/review_screen.dart';
+import 'package:projeto_extensionista_alexandre_barreto/pages/project_screens/review_screen.dart';
 import 'package:provider/provider.dart';
-import '../widgets/qr_code_widget.dart';
+import '../../widgets/full_screen_wigget.dart';
+import '../../widgets/qr_code_widget.dart';
 import 'dart:typed_data';
 import 'dart:convert';
-import '../repository/projetos-data_repository.dart';
-import '../model/projeto_data.dart';
+import '../../repository/projetos-data_repository.dart';
+import '../../model/projeto_data.dart';
 
 class GameDetailScreen extends StatefulWidget {
   final Map<String, dynamic> game;
@@ -162,7 +163,7 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
               ),
               child: Column(
                 children: [
-                  QRCodeWidget(data: widget.game['qrData'] as String),
+                  _buildQRCode(),
                   const SizedBox(height: 12),
                   Text(
                     'Escaneie para mais informações',
@@ -242,6 +243,20 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFallbackQR(String data) {
+    return Container(
+      width: 200,
+      height: 200,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[300]!, width: 2),
+      ),
+      child: QRCodeWidget(data: data),
     );
   }
 
@@ -392,121 +407,64 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
       ],
     );
   }
-}
 
-// Widget de galeria fullscreen
-class FullscreenGallery extends StatefulWidget {
-  final List<Uint8List> images;
-  final int initialIndex;
-  final String gameName;
+  Widget _buildQRCode() {
+    final qrData = widget.game['qrData'] as String?;
 
-  const FullscreenGallery({
-    Key? key,
-    required this.images,
-    required this.initialIndex,
-    required this.gameName,
-  }) : super(key: key);
+    // Se o QR code for base64, decodifica e exibe como imagem
+    if (qrData != null && qrData.isNotEmpty) {
+      // Verifica se é base64
+      if (qrData.startsWith('data:image') || qrData.length > 100) {
+        final qrBytes = _decodeBase64Image(qrData);
 
-  @override
-  State<FullscreenGallery> createState() => _FullscreenGalleryState();
-}
-
-class _FullscreenGalleryState extends State<FullscreenGallery> {
-  late PageController _pageController;
-  late int _currentIndex;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentIndex = widget.initialIndex;
-    _pageController = PageController(initialPage: widget.initialIndex);
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.gameName,
-              style: const TextStyle(fontSize: 16),
+        if (qrBytes != null && qrBytes.isNotEmpty) {
+          return Container(
+            width: 200,
+            height: 200,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey[300]!, width: 2),
             ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Image.memory(
+                qrBytes,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return _buildFallbackQR(qrData);
+                },
+              ),
+            ),
+          );
+        }
+      }
+
+      // Fallback: usa o widget de QR Code gerado
+      return _buildFallbackQR(qrData);
+    }
+
+    // Se não houver dados, mostra placeholder
+    return Container(
+      width: 200,
+      height: 200,
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.qr_code, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 8),
             Text(
-              '${_currentIndex + 1} / ${widget.images.length}',
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              'QR Code\nnão disponível',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
             ),
           ],
         ),
-      ),
-      body: Stack(
-        children: [
-          // Galeria de imagens
-          PageView.builder(
-            controller: _pageController,
-            itemCount: widget.images.length,
-            onPageChanged: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            itemBuilder: (context, index) {
-              return InteractiveViewer(
-                minScale: 0.5,
-                maxScale: 4.0,
-                child: Center(
-                  child: Image.memory(
-                    widget.images[index],
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Center(
-                        child: Icon(
-                          Icons.broken_image,
-                          size: 80,
-                          color: Colors.white54,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              );
-            },
-          ),
-          // Indicadores de página na parte inferior
-          if (widget.images.length > 1)
-            Positioned(
-              bottom: 32,
-              left: 0,
-              right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  widget.images.length,
-                      (index) => Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: _currentIndex == index ? 32 : 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: _currentIndex == index
-                          ? Colors.white
-                          : Colors.white54,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
       ),
     );
   }

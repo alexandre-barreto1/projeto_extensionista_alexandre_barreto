@@ -2,8 +2,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../model/projeto_avaliacao.dart';
-import '../repository/projetos_repository.dart';
+import '../../model/projeto_avaliacao.dart';
+import '../../repository/projetos_repository.dart';
 
 class ReviewScreen extends StatefulWidget {
   final Map<String, dynamic> game;

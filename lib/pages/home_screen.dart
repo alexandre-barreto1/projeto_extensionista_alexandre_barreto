@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_extensionista_alexandre_barreto/pages/project_screens/games_screen.dart';
 import 'profile_screen.dart';
 import 'about_screen.dart';
-import 'games_screen.dart';
 import 'members_screen.dart';
 import 'contact_screen.dart';
 

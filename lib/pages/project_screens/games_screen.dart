@@ -63,13 +63,19 @@ class _GamesScreenState extends State<GamesScreen> {
       }
     }
 
+    // Processa o QR Code - mantém o base64 original se existir
+    String qrData = project.qrcode ?? 'https://sleepkteam.com/games/${project.id}';
+
+    // Log para debug
+    print('QR Code para projeto ${project.name}: ${qrData.substring(0, qrData.length > 50 ? 50 : qrData.length)}...');
+
     return {
       'id': project.id,
       'name': project.name,
       'genre': project.genero ?? 'Não especificado',
       'status': project.status,
       'description': 'Projeto desenvolvido pela equipe SleepK Team',
-      'qrData': project.qrcode ?? 'https://sleepkteam.com/games/${project.id}',
+      'qrData': qrData, // Mantém o base64 ou URL original
       'color': _getColorByGenre(project.genero ?? ''),
       'imagemPrincipal': bytes,
     };
@@ -237,7 +243,6 @@ class _GamesScreenState extends State<GamesScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Game Image Banner - AGORA OCUPA TODO O CARD
                   Stack(
                     children: [
                       Container(
