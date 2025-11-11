@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:projeto_extensionista_alexandre_barreto/pages/review_screen.dart';
@@ -22,6 +21,8 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
   ProjectData? _projectData;
   bool _isLoadingData = true;
   String? _errorMessage;
+  int _currentImageIndex = 0;
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
@@ -29,15 +30,19 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
     _loadProjectData();
   }
 
-  Future<void> _loadProjectData() async {
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
+  Future<void> _loadProjectData() async {
     setState(() {
       _isLoadingData = true;
       _errorMessage = null;
     });
 
     try {
-      // Obtém o ID do projeto do game map
       final projectId = widget.game['id'] as String?;
 
       if (projectId != null && projectId.isNotEmpty) {
@@ -67,14 +72,12 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
     }
   }
 
-  // Converte base64 para Uint8List
   Uint8List? _decodeBase64Image(String? base64String) {
     if (base64String == null || base64String.isEmpty) {
       return null;
     }
 
     try {
-      // Remove prefixo se necessário
       if (base64String.startsWith('data:image')) {
         base64String = base64String.split(',').last;
       }
@@ -83,6 +86,47 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
       print('Erro ao decodificar imagem: $e');
       return null;
     }
+  }
+
+  List<Uint8List> _getAllImages() {
+    List<Uint8List> images = [];
+
+    // Adiciona imagem principal
+    final mainImage = widget.game['imagemPrincipal'] as Uint8List?;
+    if (mainImage != null && mainImage.isNotEmpty) {
+      images.add(mainImage);
+    }
+
+    // Adiciona imagem 1
+    if (_projectData?.imagem1 != null && _projectData!.imagem1!.isNotEmpty) {
+      final img1Bytes = _decodeBase64Image(_projectData!.imagem1);
+      if (img1Bytes != null) {
+        images.add(img1Bytes);
+      }
+    }
+
+    // Adiciona imagem 2
+    if (_projectData?.imagem2 != null && _projectData!.imagem2!.isNotEmpty) {
+      final img2Bytes = _decodeBase64Image(_projectData!.imagem2);
+      if (img2Bytes != null) {
+        images.add(img2Bytes);
+      }
+    }
+
+    return images;
+  }
+
+  void _openFullscreenGallery(int initialIndex) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FullscreenGallery(
+          images: _getAllImages(),
+          initialIndex: initialIndex,
+          gameName: widget.game['name'] as String,
+        ),
+      ),
+    );
   }
 
   @override
@@ -98,47 +142,8 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Game Banner Image
-            Container(
-              height: 200,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    widget.game['color'] as Color,
-                    (widget.game['color'] as Color).withOpacity(0.7),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: (widget.game['imagemPrincipal'] != null &&
-                    (widget.game['imagemPrincipal'] as Uint8List).isNotEmpty)
-                    ? Image.memory(
-                  widget.game['imagemPrincipal'] as Uint8List,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Icon(
-                      Icons.extension,
-                      size: 100,
-                      color: Colors.white,
-                    );
-                  },
-                )
-                    : const Icon(
-                  Icons.extension,
-                  size: 100,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Screenshot Gallery - Agora com dados reais se disponível
-            _buildGallerySection(),
-
+            // Carrossel de imagens
+            _buildImageCarousel(),
             const SizedBox(height: 24),
 
             // QR Code Section
@@ -240,11 +245,15 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
     );
   }
 
-  Widget _buildGallerySection() {
+  Widget _buildImageCarousel() {
     if (_isLoadingData) {
-      return const SizedBox(
-        height: 100,
-        child: Center(
+      return Container(
+        height: 250,
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Center(
           child: CircularProgressIndicator(
             color: Color(0xFF3F4B7C),
           ),
@@ -252,115 +261,252 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
       );
     }
 
-    if (_projectData != null) {
-      return _buildGallery();
-    }
+    final images = _getAllImages();
 
-    // Galeria padrão se não houver dados
-    return _buildDefaultGallery();
-  }
-
-  Widget _buildGallery() {
-    final List<Widget> galleryItems = [];
-
-    // Adiciona imagem 1
-    if (_projectData!.imagem1 != null && _projectData!.imagem1!.isNotEmpty) {
-      final img1Bytes = _decodeBase64Image(_projectData!.imagem1);
-      if (img1Bytes != null) {
-        print('images ${img1Bytes}');
-        galleryItems.add(_buildGalleryItem(img1Bytes, Icons.image));
-      }
-    }
-
-    // Adiciona imagem 2
-    if (_projectData!.imagem2 != null && _projectData!.imagem2!.isNotEmpty) {
-      final img2Bytes = _decodeBase64Image(_projectData!.imagem2);
-      if (img2Bytes != null) {
-        galleryItems.add(_buildGalleryItem(img2Bytes, Icons.photo_library));
-      }
-    }
-
-    // Se não houver itens, mostra galeria padrão
-    if (galleryItems.isEmpty) {
-      return _buildDefaultGallery();
-    }
-
-    return SizedBox(
-      height: 100,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: galleryItems.length,
-        itemBuilder: (context, index) {
-          return Container(
-            margin: const EdgeInsets.only(right: 12),
-            child: galleryItems[index],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildGalleryItem(Uint8List imageBytes, IconData fallbackIcon) {
-    return Container(
-      width: 150,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Image.memory(
-          imageBytes,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: (widget.game['color'] as Color).withOpacity(0.3),
-              child: Center(
-                child: Icon(
-                  fallbackIcon,
-                  size: 40,
-                  color: Colors.white,
-                ),
-              ),
-            );
-          },
+    if (images.isEmpty) {
+      // Fallback se não houver imagens
+      return Container(
+        height: 250,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              widget.game['color'] as Color,
+              (widget.game['color'] as Color).withOpacity(0.7),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
         ),
-      ),
-    );
-  }
+        child: const Center(
+          child: Icon(
+            Icons.extension,
+            size: 100,
+            color: Colors.white,
+          ),
+        ),
+      );
+    }
 
-  Widget _buildDefaultGallery() {
-    return SizedBox(
-      height: 100,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: 3,
-        itemBuilder: (context, index) {
-          return Container(
-            width: 150,
-            margin: const EdgeInsets.only(right: 12),
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: () => _openFullscreenGallery(_currentImageIndex),
+          child: Container(
+            height: 250,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  (widget.game['color'] as Color).withOpacity(0.5),
-                  (widget.game['color'] as Color).withOpacity(0.3),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  spreadRadius: 1,
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                children: [
+                  PageView.builder(
+                    controller: _pageController,
+                    itemCount: images.length,
+                    onPageChanged: (index) {
+                      setState(() {
+                        _currentImageIndex = index;
+                      });
+                    },
+                    itemBuilder: (context, index) {
+                      return Image.memory(
+                        images[index],
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: (widget.game['color'] as Color).withOpacity(0.3),
+                            child: const Center(
+                              child: Icon(
+                                Icons.broken_image,
+                                size: 60,
+                                color: Colors.white,
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  // Indicador de fullscreen
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.fullscreen,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
                 ],
               ),
-              borderRadius: BorderRadius.circular(8),
             ),
-            child: Center(
-              child: Icon(
-                index == 0
-                    ? Icons.image
-                    : index == 1
-                    ? Icons.photo_library
-                    : Icons.play_circle_outline,
-                size: 40,
-                color: Colors.white,
+          ),
+        ),
+        if (images.length > 1) ...[
+          const SizedBox(height: 12),
+          // Indicadores de página
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              images.length,
+                  (index) => Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: _currentImageIndex == index ? 24 : 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: _currentImageIndex == index
+                      ? const Color(0xFF3F4B7C)
+                      : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(4),
+                ),
               ),
             ),
-          );
-        },
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${_currentImageIndex + 1} / ${images.length}',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+// Widget de galeria fullscreen
+class FullscreenGallery extends StatefulWidget {
+  final List<Uint8List> images;
+  final int initialIndex;
+  final String gameName;
+
+  const FullscreenGallery({
+    Key? key,
+    required this.images,
+    required this.initialIndex,
+    required this.gameName,
+  }) : super(key: key);
+
+  @override
+  State<FullscreenGallery> createState() => _FullscreenGalleryState();
+}
+
+class _FullscreenGalleryState extends State<FullscreenGallery> {
+  late PageController _pageController;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.gameName,
+              style: const TextStyle(fontSize: 16),
+            ),
+            Text(
+              '${_currentIndex + 1} / ${widget.images.length}',
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
+      body: Stack(
+        children: [
+          // Galeria de imagens
+          PageView.builder(
+            controller: _pageController,
+            itemCount: widget.images.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              return InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: Center(
+                  child: Image.memory(
+                    widget.images[index],
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Center(
+                        child: Icon(
+                          Icons.broken_image,
+                          size: 80,
+                          color: Colors.white54,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+          // Indicadores de página na parte inferior
+          if (widget.images.length > 1)
+            Positioned(
+              bottom: 32,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  widget.images.length,
+                      (index) => Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: _currentIndex == index ? 32 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: _currentIndex == index
+                          ? Colors.white
+                          : Colors.white54,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
