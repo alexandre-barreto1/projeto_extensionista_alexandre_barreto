@@ -34,7 +34,7 @@ class ContactScreen extends StatelessWidget {
             _buildContactCard(
               Icons.phone,
               'Telefone',
-              '+55 (11) 98765-4321',
+              '+55 (99) 9 9999-9999',
             ),
             _buildContactCard(
               Icons.language,
@@ -44,7 +44,7 @@ class ContactScreen extends StatelessWidget {
             _buildContactCard(
               Icons.location_on,
               'Localização',
-              'São Paulo, Brasil',
+              'Florianópolis, Brasil',
             ),
             const SizedBox(height: 30),
             const Text(

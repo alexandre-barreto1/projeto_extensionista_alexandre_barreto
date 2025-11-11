@@ -34,12 +34,10 @@ class AuthService extends ChangeNotifier {
       if (response.statusCode == 200) {
         print('Response data: ${response.body}');
 
-        // Corrigido: primeiro decodifica, depois faz o parse
         final decodedData = jsonDecode(response.body);
         TeamMember teamMember = TeamMember.fromJson(decodedData);
 
         _user = teamMember;
-        print("Login realizado com sucesso: ${_user?.name}");
 
         isLoading = false;
         notifyListeners();
@@ -61,7 +59,6 @@ class AuthService extends ChangeNotifier {
   Future<void> logout() async {
     _user = null;
     notifyListeners();
-    print('Logout realizado com sucesso');
   }
 
   void updateUser(TeamMember updatedUser) {

@@ -2,8 +2,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../model/team_member.dart';
-import '../repository/team_member_repository.dart';
+import '../../model/team_member.dart';
+import '../../repository/team_member_repository.dart';
+import 'add_member_screen.dart';
 
 class MembersScreen extends StatefulWidget {
   const MembersScreen({Key? key}) : super(key: key);
@@ -66,6 +67,25 @@ class _MembersScreenState extends State<MembersScreen> {
         ],
       ),
       body: _buildBody(),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          // Navegar para tela de cadastro
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddMemberScreen(),
+            ),
+          );
+
+          // Se retornou true (sucesso), recarrega a lista
+          if (result == true) {
+            _loadMembers();
+          }
+        },
+        backgroundColor: const Color(0xFF4CAF50),
+        icon: const Icon(Icons.person_add),
+        label: const Text('Novo Membro'),
+      ),
     );
   }
 
@@ -146,7 +166,7 @@ class _MembersScreenState extends State<MembersScreen> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'A equipe ainda não possui membros',
+              'Clique no botão abaixo para adicionar',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
@@ -284,26 +304,6 @@ class _MembersScreenState extends State<MembersScreen> {
       return nameParts[0].substring(0, 2).toUpperCase();
     }
     return 'SK';
-  }
-
-  IconData _getRoleIcon(String role) {
-    String roleLower = role.toLowerCase();
-
-    if (roleLower.contains('designer') || roleLower.contains('design')) {
-      return Icons.design_services;
-    } else if (roleLower.contains('programador') || roleLower.contains('desenvolvedor')) {
-      return Icons.code;
-    } else if (roleLower.contains('artista') || roleLower.contains('arte')) {
-      return Icons.brush;
-    } else if (roleLower.contains('compositor') || roleLower.contains('som') || roleLower.contains('audio')) {
-      return Icons.music_note;
-    } else if (roleLower.contains('gerente') || roleLower.contains('manager')) {
-      return Icons.manage_accounts;
-    } else if (roleLower.contains('tester') || roleLower.contains('qa')) {
-      return Icons.bug_report;
-    } else {
-      return Icons.person;
-    }
   }
 
   void _showMemberDetails(TeamMember member) {

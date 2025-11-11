@@ -18,8 +18,6 @@ class _AuthCheckState extends State<AuthCheck> {
   Widget build(BuildContext context) {
     return Consumer<AuthService>(
       builder: (context, authService, child) {
-        print('AuthCheck - Loading: ${authService.isLoading}');
-
         if (authService.isLoading) {
           return const Scaffold(
             body: Center(
@@ -29,7 +27,6 @@ class _AuthCheckState extends State<AuthCheck> {
         }
 
         if (authService.user == null) {
-          print('AuthCheck - User: ${authService.user?.name ?? "null"}');
           return const LoginPage();
         } else {
           return const HomeScreen();

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_extensionista_alexandre_barreto/pages/project_screens/games_screen.dart';
-import 'profile_screen.dart';
-import 'about_screen.dart';
-import 'members_screen.dart';
-import 'contact_screen.dart';
+import 'package:projeto_extensionista_alexandre_barreto/pages/info_screens/contact_screen.dart';
+import 'package:projeto_extensionista_alexandre_barreto/pages/users_screens/members_screen.dart';
+import 'package:projeto_extensionista_alexandre_barreto/pages/users_screens/profile_screen.dart';
+import 'info_screens/about_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);

@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:projeto_extensionista_alexandre_barreto/model/team_member.dart';
 import 'package:provider/provider.dart';
 
-import '../repository/team_member_repository.dart';
-import '../services/auth-services.dart';
-import 'login_screen.dart';
+import '../../repository/team_member_repository.dart';
+import '../../services/auth-services.dart';
+import '../login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);

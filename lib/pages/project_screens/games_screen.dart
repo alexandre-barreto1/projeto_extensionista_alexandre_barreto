@@ -67,7 +67,6 @@ class _GamesScreenState extends State<GamesScreen> {
     String qrData = project.qrcode ?? 'https://sleepkteam.com/games/${project.id}';
 
     // Log para debug
-    print('QR Code para projeto ${project.name}: ${qrData.substring(0, qrData.length > 50 ? 50 : qrData.length)}...');
 
     return {
       'id': project.id,

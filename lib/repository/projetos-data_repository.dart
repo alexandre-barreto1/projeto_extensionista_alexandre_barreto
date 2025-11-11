@@ -19,9 +19,6 @@ class ProjetosDataRepository extends ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        // Request successful, process the response body
-        print('Response data: ${response.body}');
-        // Decode JSON response if applicable
         final decodedData = jsonDecode(response.body);
 
         projetoData = ProjectData.fromJson(decodedData);

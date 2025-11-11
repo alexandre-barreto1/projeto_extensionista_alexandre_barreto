@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import '../model/team_member.dart';
 import 'package:http/http.dart' as http;
 
-/// adicionar esse repository no main()
 class TeamMemberRepository extends ChangeNotifier {
 
   Future<List<TeamMember>> listAll() async {
