@@ -642,6 +642,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _currentPasswordController.clear();
                 _newPasswordController.clear();
                 _confirmPasswordController.clear();
+
+                Navigator.of(context).popUntil((route) => route.isFirst);
+
               }
 
               // O AuthCheck vai automaticamente detectar que user == null

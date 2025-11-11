@@ -9,7 +9,7 @@ class ProjetosDataRepository extends ChangeNotifier {
 
   Future<ProjectData> buscarProjetoData(String projetoId) async {
     Uri uri = Uri.parse('http://localhost:8080/projeto-data/${projetoId}');
-    ProjectData projetoData = new ProjectData("", "", "", "", "");
+    ProjectData projetoData = new ProjectData("", "", "", "");
     try {
       final response = await http.get(
           uri,

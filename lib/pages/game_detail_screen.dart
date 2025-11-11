@@ -208,44 +208,6 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
               ),
             ),
 
-            // Video Section (se disponível)
-            if (_projectData?.video != null && _projectData!.video!.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    const Icon(
-                      Icons.play_circle_outline,
-                      size: 64,
-                      color: Color(0xFF3F4B7C),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Vídeo Disponível',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Toque para assistir',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-
             const SizedBox(height: 24),
 
             // Review Button
@@ -318,11 +280,6 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
       }
     }
 
-    // Adiciona indicador de vídeo se existir
-    if (_projectData!.video != null && _projectData!.video!.isNotEmpty) {
-      galleryItems.add(_buildVideoIndicator());
-    }
-
     // Se não houver itens, mostra galeria padrão
     if (galleryItems.isEmpty) {
       return _buildDefaultGallery();
@@ -367,28 +324,6 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
               ),
             );
           },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildVideoIndicator() {
-    return Container(
-      width: 150,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            (widget.game['color'] as Color).withOpacity(0.5),
-            (widget.game['color'] as Color).withOpacity(0.3),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Center(
-        child: Icon(
-          Icons.play_circle_outline,
-          size: 40,
-          color: Colors.white,
         ),
       ),
     );
