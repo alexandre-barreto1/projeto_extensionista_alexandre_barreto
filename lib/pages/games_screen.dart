@@ -47,16 +47,11 @@ class _GamesScreenState extends State<GamesScreen> {
     }
   }
 
-  // Método auxiliar para converter Project em Map para o GameDetailScreen
   Map<String, Object> _projectToGameMap(Project project) {
     String? base64String = project.imagemprincipal;
-
-    // Inicializa com um Uint8List vazio
     Uint8List bytes = Uint8List(0);
 
-    // Se houver base64 válido
     if (base64String != null && base64String.isNotEmpty) {
-      // Remove prefixo se necessário
       if (base64String.startsWith('data:image')) {
         base64String = base64String.split(',').last;
       }
@@ -69,7 +64,7 @@ class _GamesScreenState extends State<GamesScreen> {
     }
 
     return {
-      'id': project.id, // IMPORTANTE: Adiciona o ID do projeto
+      'id': project.id,
       'name': project.name,
       'genre': project.genero ?? 'Não especificado',
       'status': project.status,
@@ -225,6 +220,11 @@ class _GamesScreenState extends State<GamesScreen> {
 
           return Card(
             margin: const EdgeInsets.only(bottom: 16),
+            clipBehavior: Clip.antiAlias,
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: InkWell(
               onTap: () {
                 Navigator.push(
@@ -237,89 +237,146 @@ class _GamesScreenState extends State<GamesScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Game Image Banner
-                  Container(
-                    height: 180,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          gameMap['color'] as Color,
-                          (gameMap['color'] as Color).withOpacity(0.7),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                  // Game Image Banner - AGORA OCUPA TODO O CARD
+                  Stack(
+                    children: [
+                      Container(
+                        height: 200,
+                        width: double.infinity,
+                        child: (gameMap['imagemPrincipal'] as Uint8List).isNotEmpty
+                            ? Image.memory(
+                          gameMap['imagemPrincipal'] as Uint8List,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                          errorBuilder: (context, error, stackTrace) {
+                            return _buildFallbackImage(gameMap['color'] as Color);
+                          },
+                        )
+                            : _buildFallbackImage(gameMap['color'] as Color),
                       ),
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(12),
-                        topRight: Radius.circular(12),
+                      // Overlay gradient para melhor legibilidade do texto
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          height: 80,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withOpacity(0.7),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    child: Center(
-                      child: (gameMap['imagemPrincipal'] as Uint8List).isNotEmpty
-                          ? Image.memory(
-                        gameMap['imagemPrincipal'] as Uint8List,
-                        width: 80,
-                        height: 80,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(
-                            Icons.extension,
-                            size: 80,
-                            color: Colors.white,
-                          );
-                        },
-                      )
-                          : const Icon(
-                        Icons.extension,
-                        size: 80,
-                        color: Colors.white,
+                      // Status chip no topo
+                      Positioned(
+                        top: 12,
+                        right: 12,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getStatusColor(project.status),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            project.status,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                      // Título e gênero sobre a imagem
+                      Positioned(
+                        bottom: 12,
+                        left: 12,
+                        right: 12,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              project.name,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black,
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(
+                                  _getGenreIcon(project.genero ?? ''),
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  project.genero ?? "Não especificado",
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black,
+                                        blurRadius: 4,
+                                        offset: Offset(0, 1),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
+                  // Informações do card
                   Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                project.name,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            Chip(
-                              label: Text(
-                                project.status,
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                              backgroundColor: _getStatusColor(project.status),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Gênero: ${project.genero ?? "Não especificado"}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
                         Text(
                           gameMap['description'] as String,
-                          style: const TextStyle(fontSize: 14, height: 1.4),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            height: 1.4,
+                            color: Colors.black87,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 12),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             TextButton.icon(
                               onPressed: () {
@@ -330,8 +387,26 @@ class _GamesScreenState extends State<GamesScreen> {
                                   ),
                                 );
                               },
-                              icon: const Icon(Icons.qr_code),
-                              label: const Text('Ver QR Code'),
+                              icon: const Icon(Icons.info_outline, size: 18),
+                              label: const Text('Ver Detalhes'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: const Color(0xFF3F4B7C),
+                              ),
+                            ),
+                            TextButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => GameDetailScreen(game: gameMap),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.qr_code, size: 18),
+                              label: const Text('QR Code'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: const Color(0xFF4CAF50),
+                              ),
                             ),
                           ],
                         ),
@@ -347,21 +422,62 @@ class _GamesScreenState extends State<GamesScreen> {
     );
   }
 
+  Widget _buildFallbackImage(Color color) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            color,
+            color.withOpacity(0.7),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: const Center(
+        child: Icon(
+          Icons.extension,
+          size: 80,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  IconData _getGenreIcon(String genre) {
+    switch (genre.toLowerCase()) {
+      case 'aventura':
+      case 'aventura/rpg':
+      case 'rpg':
+        return Icons.explore;
+      case 'plataforma':
+        return Icons.videogame_asset;
+      case 'puzzle':
+        return Icons.extension;
+      case 'ação':
+        return Icons.sports_martial_arts;
+      case 'estratégia':
+        return Icons.emoji_objects;
+      default:
+        return Icons.games;
+    }
+  }
+
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'lançado':
       case 'concluído':
-        return const Color(0xFF4CAF50).withOpacity(0.2);
+        return const Color(0xFF4CAF50);
       case 'em desenvolvimento':
       case 'desenvolvimento':
-        return const Color(0xFFFF9800).withOpacity(0.2);
+        return const Color(0xFFFF9800);
       case 'beta':
       case 'teste':
-        return const Color(0xFF2196F3).withOpacity(0.2);
+        return const Color(0xFF2196F3);
       case 'pausado':
-        return const Color(0xFF9E9E9E).withOpacity(0.2);
+        return const Color(0xFF9E9E9E);
       default:
-        return const Color(0xFF4CAF50).withOpacity(0.2);
+        return const Color(0xFF4CAF50);
     }
   }
 }
