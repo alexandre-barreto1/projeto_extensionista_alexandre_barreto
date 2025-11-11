@@ -130,6 +130,22 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
     );
   }
 
+  void _openFullscreenQRCode() {
+    final qrData = widget.game['qrData'] as String?;
+
+    if (qrData != null && qrData.isNotEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => FullScreenQRCode(
+            qrData: qrData,
+            gameName: widget.game['name'] as String,
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -148,31 +164,55 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
             const SizedBox(height: 24),
 
             // QR Code Section
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  _buildQRCode(),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Escaneie para mais informações',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
+            GestureDetector(
+              onTap: _openFullscreenQRCode,
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.3),
+                      spreadRadius: 2,
+                      blurRadius: 5,
                     ),
-                  ),
-                ],
+                  ],
+                ),
+                child: Stack(
+                  children: [
+                    Column(
+                      children: [
+                        _buildQRCode(),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Escaneie para mais informações',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Indicador de fullscreen
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Icon(
+                          Icons.fullscreen,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 24),
