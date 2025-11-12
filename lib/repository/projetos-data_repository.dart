@@ -6,23 +6,22 @@ import 'package:http/http.dart' as http;
 import '../model/projeto_data.dart';
 
 class ProjetosDataRepository extends ChangeNotifier {
-
   Future<ProjectData> buscarProjetoData(String projetoId) async {
     Uri uri = Uri.parse('http://localhost:8080/projeto-data/${projetoId}');
     ProjectData projetoData = new ProjectData("", "", "", "");
     try {
       final response = await http.get(
-          uri,
-          headers: <String, String>{
-            'Content-Type': 'application/json; charset=UTF-8', // Specify content type as JSON
-          },
+        uri,
+        headers: <String, String>{
+          'Content-Type':
+              'application/json; charset=UTF-8', // Specify content type as JSON
+        },
       );
 
       if (response.statusCode == 200) {
         final decodedData = jsonDecode(response.body);
 
         projetoData = ProjectData.fromJson(decodedData);
-
       } else {
         // Request failed
         print('Request failed with status: ${response.statusCode}');
@@ -35,35 +34,67 @@ class ProjetosDataRepository extends ChangeNotifier {
     return projetoData;
   }
 
-Future<ProjectData> save(ProjectData projectData) async {
-  Uri uri = Uri.parse('http://localhost:8080/projeto-data');
+  Future<ProjectData> save(ProjectData projectData) async {
+    Uri uri = Uri.parse('http://localhost:8080/projeto-data');
 
-  // Encode the data to a JSON string
-  String body = json.encode(projectData.toJson());
+    // Encode the data to a JSON string
+    String body = json.encode(projectData.toJson());
 
-  try {
-    final response = await http.post(
+    try {
+      final response = await http.post(
         uri,
         headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8', // Specify content type as JSON
+          'Content-Type':
+              'application/json; charset=UTF-8', // Specify content type as JSON
         },
         body: body,
-    );
+      );
 
-    if (response.statusCode == 200) {
-      final decodedData = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        final decodedData = jsonDecode(response.body);
 
-      projectData = ProjectData.fromJson(decodedData);
-
-    } else {
-      // Request failed
-      print('Request failed with status: ${response.statusCode}');
+        projectData = ProjectData.fromJson(decodedData);
+      } else {
+        // Request failed
+        print('Request failed with status: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Handle any errors during the request
+      print('Error during request: $e');
     }
-  } catch (e) {
-    // Handle any errors during the request
-    print('Error during request: $e');
+
+    return projectData;
   }
 
-  return projectData;
-}
+  Future<ProjectData> edit(ProjectData projectData) async {
+    Uri uri = Uri.parse('http://localhost:8080/projeto-data');
+
+    // Encode the data to a JSON string
+    String body = json.encode(projectData.toJson());
+
+    try {
+      final response = await http.put(
+        uri,
+        headers: <String, String>{
+          'Content-Type':
+              'application/json; charset=UTF-8', // Specify content type as JSON
+        },
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final decodedData = jsonDecode(response.body);
+
+        projectData = ProjectData.fromJson(decodedData);
+      } else {
+        // Request failed
+        print('Request failed with status: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Handle any errors during the request
+      print('Error during request: $e');
+    }
+
+    return projectData;
+  }
 }
