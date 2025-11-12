@@ -51,11 +51,9 @@ Future<ProjectData> save(ProjectData projectData) async {
     );
 
     if (response.statusCode == 200) {
-      // Request successful, process the response body
-      print('Response data: ${response.body}');
-      // Decode JSON response if applicable
+      final decodedData = jsonDecode(response.body);
 
-      projectData = ProjectData.fromJson(response.body as Map<String, dynamic>);
+      projectData = ProjectData.fromJson(decodedData);
 
     } else {
       // Request failed

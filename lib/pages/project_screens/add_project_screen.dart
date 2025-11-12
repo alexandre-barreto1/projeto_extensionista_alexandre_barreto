@@ -69,7 +69,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
 
         final fileSize = await image.length(); // tamanho em bytes
 
-        const maxSizeInBytes = 20 * 1024 * 1024; // 20 MB
+        const maxSizeInBytes = 5 * 1024 * 1024; // 5 MB
 
         if (fileSize > maxSizeInBytes) {
           print("⚠️ A imagem é maior que 20MB!");
