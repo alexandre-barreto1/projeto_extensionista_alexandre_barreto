@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_extensionista_alexandre_barreto/pages/project_screens/add_project_screen.dart';
 import 'package:projeto_extensionista_alexandre_barreto/pages/project_screens/games_screen.dart';
 import 'package:projeto_extensionista_alexandre_barreto/pages/info_screens/contact_screen.dart';
 import 'package:projeto_extensionista_alexandre_barreto/pages/users_screens/members_screen.dart';
@@ -80,6 +81,26 @@ class HomeScreen extends StatelessWidget {
               MaterialPageRoute(builder: (context) => const ProfileScreen()),
             ),
           ),
+          _buildCard(
+            context,
+            'Criar novo projeto',
+            'Adicionar novos projetos para avaliação',
+            Icons.add,
+                () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AddProjectScreen()),
+            ),
+          ),
+          // _buildCard(
+          //   context,
+          //   'Criar novo projeto',
+          //   'Adicionar novos projetos para avaliação',
+          //   Icons.edit,
+          //       () => Navigator.push(
+          //     context,
+          //     MaterialPageRoute(builder: (context) => const EditProjectScreen()),
+          //   ),
+          // ),
         ],
       ),
     );

@@ -1,6 +1,4 @@
 
-import 'package:projeto_extensionista_alexandre_barreto/model/projeto_data.dart';
-
 class Project {
   final String id;
   final String name;
@@ -8,9 +6,8 @@ class Project {
   final String? qrcode;
   final String? genero;
   final String? imagemprincipal;
-  final ProjectData? projetoData;
 
-  Project(this.id, this.name, this.status, this.qrcode, this.genero, this.imagemprincipal, this.projetoData);
+  Project(this.id, this.name, this.status, this.qrcode, this.genero, this.imagemprincipal);
 
   Project.fromJson(Map<String, dynamic> json)
       : id = json['id'] as String,
@@ -18,8 +15,7 @@ class Project {
       status = json['status'] as String,
       qrcode = json['qrcode'] as String?,
       genero = json['genero'] as String?,
-      imagemprincipal = json['imagemprincipal'] as String?,
-      projetoData = json['projetoData'];
+      imagemprincipal = json['imagemprincipal'] as String?;
 
 
   Map<String, dynamic> toJson() {
@@ -30,7 +26,6 @@ class Project {
       'qrcode' : qrcode,
       'genero' : genero,
       'imagemprincipal': imagemprincipal,
-      'projetoData': projetoData
     };
   }
 
