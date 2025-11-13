@@ -32,8 +32,6 @@ class AuthService extends ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        print('Response data: ${response.body}');
-
         final decodedData = jsonDecode(response.body);
         TeamMember teamMember = TeamMember.fromJson(decodedData);
 

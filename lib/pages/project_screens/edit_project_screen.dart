@@ -8,19 +8,27 @@ import '../../model/projeto_data.dart';
 import '../../repository/projetos_repository.dart';
 import '../../repository/projetos_data_repository.dart';
 
-class AddProjectScreen extends StatefulWidget {
-  const AddProjectScreen({Key? key}) : super(key: key);
+class EditProjectScreen extends StatefulWidget {
+  final Project project;
+  final ProjectData? projectData;
+
+  const EditProjectScreen({
+    Key? key,
+    required this.project,
+    this.projectData,
+  }) : super(key: key);
 
   @override
-  State<AddProjectScreen> createState() => _AddProjectScreenState();
+  State<EditProjectScreen> createState() => _EditProjectScreenState();
 }
 
-class _AddProjectScreenState extends State<AddProjectScreen> {
+class _EditProjectScreenState extends State<EditProjectScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
+  late TextEditingController _nameController;
   final ImagePicker _picker = ImagePicker();
 
   bool _isSaving = false;
+  bool _isLoadingData = false;
 
   // Status e Gênero
   String? _selectedStatus;
@@ -31,6 +39,14 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
   Uint8List? _imagemPrincipal;
   Uint8List? _imagem2;
   Uint8List? _imagem3;
+
+  // Flags para saber se imagem foi alterada
+  bool _qrCodeChanged = false;
+  bool _imagemPrincipalChanged = false;
+  bool _imagem2Changed = false;
+  bool _imagem3Changed = false;
+
+  ProjectData? _currentProjectData;
 
   // Listas de opções
   final List<String> _statusOptions = [
@@ -51,6 +67,75 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _initializeData();
+  }
+
+  void _initializeData() {
+    // Inicializar controllers com dados atuais
+    _nameController = TextEditingController(text: widget.project.name);
+    _selectedStatus = widget.project.status;
+    _selectedGenero = widget.project.genero;
+
+    // Decodificar imagens existentes
+    _qrCodeImage = _decodeBase64Image(widget.project.qrcode);
+    _imagemPrincipal = _decodeBase64Image(widget.project.imagemprincipal);
+
+    // Carregar ProjectData se não foi fornecido
+    if (widget.projectData != null) {
+      _currentProjectData = widget.projectData;
+      _imagem2 = _decodeBase64Image(widget.projectData!.imagem1);
+      _imagem3 = _decodeBase64Image(widget.projectData!.imagem2);
+    } else {
+      _loadProjectData();
+    }
+  }
+
+  Future<void> _loadProjectData() async {
+    setState(() {
+      _isLoadingData = true;
+    });
+
+    try {
+      final projetosDataRepository = Provider.of<ProjetosDataRepository>(
+        context,
+        listen: false,
+      );
+
+      final projectData = await projetosDataRepository.buscarProjetoData(widget.project.id);
+
+      setState(() {
+        _currentProjectData = projectData;
+        _imagem2 = _decodeBase64Image(projectData.imagem1);
+        _imagem3 = _decodeBase64Image(projectData.imagem2);
+        _isLoadingData = false;
+      });
+    } catch (e) {
+      print('Erro ao carregar ProjectData: $e');
+      setState(() {
+        _isLoadingData = false;
+      });
+    }
+  }
+
+  Uint8List? _decodeBase64Image(String? base64String) {
+    if (base64String == null || base64String.isEmpty) {
+      return null;
+    }
+
+    try {
+      if (base64String.startsWith('data:image')) {
+        base64String = base64String.split(',').last;
+      }
+      return base64Decode(base64String);
+    } catch (e) {
+      print('Erro ao decodificar imagem: $e');
+      return null;
+    }
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     super.dispose();
@@ -66,33 +151,32 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
       );
 
       if (image != null) {
-
-        final fileSize = await image.length(); // tamanho em bytes
-
+        final fileSize = await image.length();
         const maxSizeInBytes = 5 * 1024 * 1024; // 5 MB
 
         if (fileSize > maxSizeInBytes) {
-          print("⚠️ A imagem é maior que 20MB!");
           showTooLargeDialog(context);
           return;
         }
-
-        print("✅ Imagem dentro do limite: ${(fileSize / 1024 / 1024).toStringAsFixed(2)} MB");
 
         final bytes = await image.readAsBytes();
         setState(() {
           switch (tipo) {
             case 'qrcode':
               _qrCodeImage = bytes;
+              _qrCodeChanged = true;
               break;
             case 'principal':
               _imagemPrincipal = bytes;
+              _imagemPrincipalChanged = true;
               break;
             case 'imagem2':
               _imagem2 = bytes;
+              _imagem2Changed = true;
               break;
             case 'imagem3':
               _imagem3 = bytes;
+              _imagem3Changed = true;
               break;
           }
         });
@@ -108,15 +192,19 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
       switch (tipo) {
         case 'qrcode':
           _qrCodeImage = null;
+          _qrCodeChanged = true;
           break;
         case 'principal':
           _imagemPrincipal = null;
+          _imagemPrincipalChanged = true;
           break;
         case 'imagem2':
           _imagem2 = null;
+          _imagem2Changed = true;
           break;
         case 'imagem3':
           _imagem3 = null;
+          _imagem3Changed = true;
           break;
       }
     });
@@ -127,7 +215,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Imagem muito grande'),
-        content: const Text('Por favor, selecione uma imagem menor que 20MB.'),
+        content: const Text('Por favor, selecione uma imagem menor que 5MB.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -142,11 +230,22 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Novo Projeto'),
+        title: const Text('Editar Projeto'),
         backgroundColor: const Color(0xFF3F4B7C),
         foregroundColor: Colors.white,
       ),
-      body: SingleChildScrollView(
+      body: _isLoadingData
+          ? const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: Color(0xFF3F4B7C)),
+            SizedBox(height: 16),
+            Text('Carregando dados do projeto...'),
+          ],
+        ),
+      )
+          : SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
@@ -164,14 +263,14 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
-                        Icons.add_circle,
+                        Icons.edit,
                         size: 64,
                         color: Color(0xFF3F4B7C),
                       ),
                     ),
                     const SizedBox(height: 16),
                     const Text(
-                      'Cadastrar Novo Projeto',
+                      'Editar Projeto',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -180,7 +279,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Preencha as informações do projeto',
+                      'Atualize as informações do projeto',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
@@ -320,7 +419,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Adicione imagens para ilustrar o projeto',
+                'Atualize ou mantenha as imagens do projeto',
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey[600],
@@ -408,12 +507,11 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                         width: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor:
-                          AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
                           : const Text(
-                        'Cadastrar',
+                        'Salvar Alterações',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -484,13 +582,26 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: IconButton(
-                      onPressed: () => _removeImage(tipo),
-                      icon: const Icon(Icons.close),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                      ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () => _pickImage(tipo),
+                          icon: const Icon(Icons.edit),
+                          style: IconButton.styleFrom(
+                            backgroundColor: const Color(0xFF3F4B7C),
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          onPressed: () => _removeImage(tipo),
+                          icon: const Icon(Icons.close),
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -536,7 +647,6 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
   }
 
   Future<void> _saveProject() async {
-    // Validar formulário
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -546,52 +656,59 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
     });
 
     try {
-      // Converter imagens para base64
-      String? qrCodeBase64;
-      String? imagemPrincipalBase64;
+      // Preparar imagens (converter para base64 apenas se foram alteradas)
+      String? qrCodeBase64 = widget.project.qrcode;
+      String? imagemPrincipalBase64 = widget.project.imagemprincipal;
 
-      if (_qrCodeImage != null) {
-        qrCodeBase64 = 'data:image/png;base64,${base64Encode(_qrCodeImage!)}';
+      if (_qrCodeChanged) {
+        qrCodeBase64 = _qrCodeImage != null
+            ? 'data:image/png;base64,${base64Encode(_qrCodeImage!)}'
+            : null;
       }
 
-      if (_imagemPrincipal != null) {
-        imagemPrincipalBase64 =
-        'data:image/png;base64,${base64Encode(_imagemPrincipal!)}';
+      if (_imagemPrincipalChanged) {
+        imagemPrincipalBase64 = _imagemPrincipal != null
+            ? 'data:image/png;base64,${base64Encode(_imagemPrincipal!)}'
+            : null;
       }
 
-      // Criar objeto Project
-      final newProject = Project(
-        '', // ID será gerado pelo backend
+      // Atualizar objeto Project
+      final updatedProject = Project(
+        widget.project.id,
         _nameController.text.trim(),
         _selectedStatus!,
         qrCodeBase64,
         _selectedGenero!,
-        imagemPrincipalBase64
+        imagemPrincipalBase64,
       );
 
-      // Salvar projeto
+      // Salvar projeto usando ProjetosRepository.edit
       final projetosRepository = Provider.of<ProjetosRepository>(
         context,
         listen: false,
       );
 
-      final savedProject = await projetosRepository.save(newProject);
+      final savedProject = await projetosRepository.edit(updatedProject);
 
-      // Se houver imagem 2 ou 3, salvar ProjectData
-      if (_imagem2 != null || _imagem3 != null) {
-        String? imagem2Base64;
-        String? imagem3Base64;
+      // Atualizar ProjectData se houver alterações nas imagens 2 ou 3
+      if (_imagem2Changed || _imagem3Changed) {
+        String? imagem2Base64 = _currentProjectData?.imagem1;
+        String? imagem3Base64 = _currentProjectData?.imagem2;
 
-        if (_imagem2 != null) {
-          imagem2Base64 = 'data:image/png;base64,${base64Encode(_imagem2!)}';
+        if (_imagem2Changed) {
+          imagem2Base64 = _imagem2 != null
+              ? 'data:image/png;base64,${base64Encode(_imagem2!)}'
+              : null;
         }
 
-        if (_imagem3 != null) {
-          imagem3Base64 = 'data:image/png;base64,${base64Encode(_imagem3!)}';
+        if (_imagem3Changed) {
+          imagem3Base64 = _imagem3 != null
+              ? 'data:image/png;base64,${base64Encode(_imagem3!)}'
+              : null;
         }
 
-        final projectData = ProjectData(
-          '', // ID será gerado pelo backend
+        final updatedProjectData = ProjectData(
+          _currentProjectData?.id ?? '',
           imagem2Base64,
           imagem3Base64,
           savedProject.id,
@@ -602,7 +719,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
           listen: false,
         );
 
-         await projetosDataRepository.save(projectData);
+        await projetosDataRepository.edit(updatedProjectData);
       }
 
       setState(() {
@@ -631,7 +748,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Projeto cadastrado com sucesso!',
+                  'Projeto atualizado com sucesso!',
                   style: TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 16),
@@ -662,8 +779,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.category,
-                        size: 18, color: Color(0xFF3F4B7C)),
+                    const Icon(Icons.category, size: 18, color: Color(0xFF3F4B7C)),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(savedProject.genero ?? 'N/A'),
@@ -675,9 +791,8 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop(); // Fechar dialog
-                  Navigator.of(context)
-                      .pop(true); // Voltar para lista com sucesso
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(true);
                 },
                 child: const Text(
                   'OK',
@@ -699,9 +814,9 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
 
       print('Erro ao salvar projeto: $e');
 
-      // Mostrar erro
       if (mounted) {
-        _showErrorDialog('Não foi possível cadastrar o projeto.\n\nErro: ${e.toString()}');
+        _showErrorDialog(
+            'Não foi possível atualizar o projeto.\n\nErro: ${e.toString()}');
       }
     }
   }

@@ -6,7 +6,7 @@ import '../../widgets/full_screen_wigget.dart';
 import '../../widgets/qr_code_widget.dart';
 import 'dart:typed_data';
 import 'dart:convert';
-import '../../repository/projetos-data_repository.dart';
+import '../../repository/projetos_data_repository.dart';
 import '../../model/projeto_data.dart';
 
 class GameDetailScreen extends StatefulWidget {

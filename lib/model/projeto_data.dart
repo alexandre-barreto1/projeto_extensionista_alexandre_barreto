@@ -9,8 +9,8 @@ class ProjectData {
 
   ProjectData.fromJson(Map<String, dynamic> json)
       : id = json['id'] as String,
-        imagem1 = json['imagem1'] as String,
-        imagem2 = json['imagem2'] as String,
+        imagem1 = json['imagem1'] as String?,
+        imagem2 = json['imagem2'] as String?,
         projetoId = json['projetoId'] as String;
 
 

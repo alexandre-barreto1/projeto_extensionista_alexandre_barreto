@@ -15,12 +15,12 @@ class ReviewScreen extends StatefulWidget {
 }
 
 class _ReviewScreenState extends State<ReviewScreen> {
-  double gameplayRating = 3.0;
-  double graphicsRating = 3.0;
-  double soundRating = 3.0;
-  double storyRating = 3.0;
-  double performanceRating = 3.0;
-  double interfaceRating = 3.0;
+  double gameplayRating = 5.0;
+  double graphicsRating = 5.0;
+  double soundRating = 5.0;
+  double storyRating = 5.0;
+  double performanceRating = 5.0;
+  double interfaceRating = 5.0;
   final _commentController = TextEditingController();
 
   // Adicionar estado de loading
@@ -72,7 +72,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     ),
                   ),
                   const Text(
-                    ' / 5.0',
+                    ' / 10',
                     style: TextStyle(fontSize: 18, color: Colors.grey),
                   ),
                 ],
@@ -235,7 +235,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             child: Slider(
               value: value,
               min: 0,
-              max: 5,
+              max: 10,
               divisions: 10,
               onChanged: onChanged,
             ),

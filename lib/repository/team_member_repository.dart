@@ -122,12 +122,12 @@ Future<TeamMember> save(TeamMember teamMember) async {
     );
 
     if (response.statusCode == 200) {
-      // Request successful, process the response body
+
       print('Response data: ${response.body}');
-      // Decode JSON response if applicable
 
-      teamMember = TeamMember.fromJson(response.body as Map<String, dynamic>);
+      final decodedData = jsonDecode(response.body);
 
+      teamMember = TeamMember.fromJson(decodedData);
     } else {
       // Request failed
       print('Request failed with status: ${response.statusCode}');

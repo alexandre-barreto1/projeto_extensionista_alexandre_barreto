@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:projeto_extensionista_alexandre_barreto/model/project.dart';
 import 'package:projeto_extensionista_alexandre_barreto/repository/projetos_repository.dart';
 import 'add_project_screen.dart';
+import 'edit_project_screen.dart';
 
 class ManageProjectsScreen extends StatefulWidget {
   const ManageProjectsScreen({Key? key}) : super(key: key);
@@ -122,6 +123,20 @@ class _ManageProjectsScreenState extends State<ManageProjectsScreen> {
     }
   }
 
+  Future<void> _navigateToEditProject(Project project) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditProjectScreen(project: project),
+      ),
+    );
+
+    // Se retornou true (sucesso), recarrega a lista
+    if (result == true) {
+      _carregarProjetos();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -140,7 +155,6 @@ class _ManageProjectsScreenState extends State<ManageProjectsScreen> {
       body: _buildBody(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          // Navegar para tela de adicionar projeto
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
@@ -148,7 +162,6 @@ class _ManageProjectsScreenState extends State<ManageProjectsScreen> {
             ),
           );
 
-          // Se retornou true (sucesso), recarrega a lista
           if (result == true) {
             _carregarProjetos();
           }
@@ -423,9 +436,7 @@ class _ManageProjectsScreenState extends State<ManageProjectsScreen> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () {
-                      _showMessage('Funcionalidade de edição em desenvolvimento');
-                    },
+                    onPressed: () => _navigateToEditProject(project),
                     icon: const Icon(Icons.edit, size: 18),
                     label: const Text('Editar'),
                     style: OutlinedButton.styleFrom(
@@ -543,7 +554,7 @@ class _ManageProjectsScreenState extends State<ManageProjectsScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _showMessage('Funcionalidade de exclusão em desenvolvimento');
+              _excluirProjeto(project.id);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
@@ -556,14 +567,21 @@ class _ManageProjectsScreenState extends State<ManageProjectsScreen> {
     );
   }
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: const Color(0xFF3F4B7C),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+  Future<void> _excluirProjeto(String id) async {
+    try {
+      final projetosRepository = Provider.of<ProjetosRepository>(context, listen: false);
+      await projetosRepository.delete(id);
+
+      _carregarProjetos();
+
+    } catch (e) {
+      print("Erro ao excluir projeto: $e");
+      setState(() {
+        _errorMessage = "Erro ao excluir projeto. Tente novamente.";
+        _isLoading = false;
+      });
+    }
+
   }
+
 }

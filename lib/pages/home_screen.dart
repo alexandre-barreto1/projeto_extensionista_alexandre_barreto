@@ -4,6 +4,7 @@ import 'package:projeto_extensionista_alexandre_barreto/pages/info_screens/conta
 import 'package:projeto_extensionista_alexandre_barreto/pages/project_screens/manage_projects_screen.dart';
 import 'package:projeto_extensionista_alexandre_barreto/pages/users_screens/members_screen.dart';
 import 'package:projeto_extensionista_alexandre_barreto/pages/users_screens/profile_screen.dart';
+import 'package:projeto_extensionista_alexandre_barreto/pages/project_screens/reports_screen.dart';
 import 'info_screens/about_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -91,28 +92,38 @@ class HomeScreen extends StatelessWidget {
               MaterialPageRoute(builder: (context) => const ManageProjectsScreen()),
             ),
           ),
-          // _buildCard(
-          //   context,
-          //   'Criar novo projeto',
-          //   'Adicionar novos projetos para avaliação',
-          //   Icons.edit,
-          //       () => Navigator.push(
-          //     context,
-          //     MaterialPageRoute(builder: (context) => const EditProjectScreen()),
-          //   ),
-          // ),
+          _buildCard(
+            context,
+            'Relatórios',
+            'Visualize estatísticas e avaliações dos jogos',
+            Icons.analytics,
+                () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ReportsScreen()),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildCard(BuildContext context, String title, String subtitle,
-      IconData icon, VoidCallback onTap) {
+  Widget _buildCard(
+      BuildContext context,
+      String title,
+      String subtitle,
+      IconData icon,
+      VoidCallback onTap, {
+        Color? color,
+      }) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
       child: ListTile(
-        leading: Icon(icon, color: const Color(0xFF3F4B7C), size: 32),
+        leading: Icon(
+          icon,
+          color: color ?? const Color(0xFF3F4B7C),
+          size: 32,
+        ),
         title: Text(
           title,
           style: const TextStyle(
