@@ -72,7 +72,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     ),
                   ),
                   const Text(
-                    ' / 10',
+                    ' / 10.0',
                     style: TextStyle(fontSize: 18, color: Colors.grey),
                   ),
                 ],
@@ -236,7 +236,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
               value: value,
               min: 0,
               max: 10,
-              divisions: 10,
+              divisions: 20,
               onChanged: onChanged,
             ),
           ),
@@ -244,7 +244,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('0', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-              Text('5', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+              Text('10', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
             ],
           ),
         ],
@@ -266,14 +266,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
       }
 
       // Criar objeto ProjetoAvaliacao
-      // Converter ratings de 0-5 para 0-10 multiplicando por 2
+      // As notas já estão de 0-10, então não precisamos multiplicar
       final avaliacao = ProjetoAvaliacao(
         projectId,
-        (gameplayRating * 2).round(),      // gameplay
-        (soundRating * 2).round(),         // sound
-        (storyRating * 2).round(),         // story
-        (performanceRating * 2).round(),   // performance
-        (interfaceRating * 2).round(),     // gameInterface
+        gameplayRating.round(),      // gameplay
+        soundRating.round(),          // sound
+        storyRating.round(),          // story
+        performanceRating.round(),    // performance
+        interfaceRating.round(),      // gameInterface
         _commentController.text.isEmpty ? null : _commentController.text, // comentario
       );
 
@@ -317,7 +317,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Nota média: ${averageRating.toStringAsFixed(1)}/5.0',
+                  'Nota média: ${averageRating.toStringAsFixed(1)}/10.0',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

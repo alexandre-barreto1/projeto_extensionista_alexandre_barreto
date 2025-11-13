@@ -248,8 +248,8 @@ class _ProjectReportDetailScreenState extends State<ProjectReportDetailScreen> {
   }
 
   Widget _buildGeneralInfo() {
-    final hasData = _mediaAvaliacao!.gameplayMedia != null &&
-        _mediaAvaliacao!.gameplayMedia! > 0;
+    final hasData = _mediaAvaliacao!.gameplayMedia  != null &&
+        _mediaAvaliacao!.gameplayMedia ! > 0;
 
     if (!hasData) {
       return Container(
@@ -292,11 +292,11 @@ class _ProjectReportDetailScreenState extends State<ProjectReportDetailScreen> {
       );
     }
 
-    final average = ((_mediaAvaliacao!.gameplayMedia ?? 0) +
-        (_mediaAvaliacao!.soundMedia ?? 0) +
-        (_mediaAvaliacao!.storyMedia ?? 0) +
-        (_mediaAvaliacao!.performaceMedia ?? 0) +
-        (_mediaAvaliacao!.gameInterfaceMedia ?? 0)) /
+    final average = ((_mediaAvaliacao!.gameplayMedia  ?? 0) +
+        (_mediaAvaliacao!.soundMedia  ?? 0) +
+        (_mediaAvaliacao!.storyMedia  ?? 0) +
+        (_mediaAvaliacao!.performaceMedia  ?? 0) +
+        (_mediaAvaliacao!.gameInterfaceMedia  ?? 0)) /
         5;
 
     return Container(
@@ -390,7 +390,7 @@ class _ProjectReportDetailScreenState extends State<ProjectReportDetailScreen> {
 
   Widget _buildChart() {
     final hasData = _mediaAvaliacao!.gameplayMedia != null &&
-        _mediaAvaliacao!.gameplayMedia! > 0;
+        _mediaAvaliacao!.gameplayMedia ! > 0;
 
     if (!hasData) {
       return const SizedBox.shrink();
@@ -399,31 +399,31 @@ class _ProjectReportDetailScreenState extends State<ProjectReportDetailScreen> {
     final metrics = [
       {
         'label': 'Gameplay',
-        'value': (_mediaAvaliacao!.gameplayMedia ?? 0).toDouble(),
+        'value': (_mediaAvaliacao!.gameplayMedia  ?? 0).toDouble(),
         'icon': Icons.gamepad,
         'color': const Color(0xFF4CAF50),
       },
       {
         'label': 'Som',
-        'value': (_mediaAvaliacao!.soundMedia ?? 0).toDouble(),
+        'value': (_mediaAvaliacao!.soundMedia  ?? 0).toDouble(),
         'icon': Icons.volume_up,
         'color': const Color(0xFF2196F3),
       },
       {
         'label': 'História',
-        'value': (_mediaAvaliacao!.storyMedia ?? 0).toDouble(),
+        'value': (_mediaAvaliacao!.storyMedia  ?? 0).toDouble(),
         'icon': Icons.book,
         'color': const Color(0xFF9C27B0),
       },
       {
         'label': 'Performance',
-        'value': (_mediaAvaliacao!.performaceMedia ?? 0).toDouble(),
+        'value': (_mediaAvaliacao!.performaceMedia  ?? 0).toDouble(),
         'icon': Icons.speed,
         'color': const Color(0xFFFF9800),
       },
       {
         'label': 'Interface',
-        'value': (_mediaAvaliacao!.gameInterfaceMedia ?? 0).toDouble(),
+        'value': (_mediaAvaliacao!.gameInterfaceMedia  ?? 0).toDouble(),
         'icon': Icons.dashboard,
         'color': const Color(0xFFF44336),
       },
